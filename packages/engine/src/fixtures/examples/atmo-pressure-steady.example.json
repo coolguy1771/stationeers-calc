@@ -1,0 +1,115 @@
+{
+  "fixtureVersion": "1",
+  "fixtureId": "example.synthetic.atmo-pressure-steady",
+  "gameBuild": "v0.0.0000.00000-synthetic-example",
+  "branch": "public",
+  "capturedAt": "2025-01-01T00:00:00.000Z",
+  "capturedBy": {
+    "operator": "synthetic example (invented values, not a game capture)",
+    "method": "other",
+    "notes": "Written by hand to demonstrate the document format and to exercise the replay harness. Every number here is invented; none of it is extractable game data (6.1)."
+  },
+  "scenario": {
+    "inventories": {
+      "net-a": {
+        "species": [
+          { "speciesId": "Oxygen", "phase": "gas", "moles": 100 },
+          { "speciesId": "Nitrogen", "phase": "gas", "moles": 400 }
+        ],
+        "thermal": { "kind": "temperature", "value": 293.15, "unit": "K" }
+      }
+    },
+    "networks": [
+      {
+        "ref": "net-a",
+        "medium": "gas-pipe",
+        "volumeM3": 1,
+        "devices": ["dev-pressure-sensor"],
+        "notes": "Invented single gas network: deliberately the simplest case for a static pressure calculation (13 #11b)."
+      }
+    ],
+    "devices": [
+      {
+        "ref": "dev-pressure-sensor",
+        "definitionId": "PrefabGasSensorExample",
+        "settings": { "reporting": "absolute" }
+      }
+    ],
+    "conditions": {
+      "temperatureK": 293.15,
+      "networkVolumeM3": 1,
+      "totalMoles": 500
+    }
+  },
+  "observation": {
+    "tickLengthS": 0.5,
+    "tickLengthSource": "measured",
+    "tickCount": 0,
+    "sampleIntervalS": 5,
+    "sampling": "Steady-state capture: the sensor was read once the numbers had stopped changing, on each of three independent runs.",
+    "runs": 3
+  },
+  "ticks": [
+    {
+      "tick": 0,
+      "timeS": 0,
+      "networks": {
+        "net-a": {
+          "moles": [
+            { "speciesId": "Oxygen", "phase": "gas", "moles": 100 },
+            { "speciesId": "Nitrogen", "phase": "gas", "moles": 400 }
+          ],
+          "thermal": { "kind": "temperature", "value": 293.15, "unit": "K" },
+          "outputs": { "pressureKpa": 1218.6 }
+        }
+      },
+      "notes": "A static scenario has one sample: the initial state is the steady state, and the observation window is zero ticks long."
+    }
+  ],
+  "expected": [
+    {
+      "tick": 0,
+      "quantities": {
+        "net-a.moles.Nitrogen.gas": 400,
+        "net-a.moles.Oxygen.gas": 100,
+        "net-a.outputs.pressureKpa": 1218.6,
+        "net-a.thermal.temperature": 293.15
+      }
+    }
+  ],
+  "tolerances": {
+    "quantities": {
+      "net-a.moles.Nitrogen.gas": {
+        "abs": 0,
+        "basis": "Closed network: nothing produces or consumes nitrogen in this scenario, so the recorded count is a transcription copy rather than a measurement."
+      },
+      "net-a.moles.Oxygen.gas": {
+        "abs": 0,
+        "basis": "Closed network: nothing produces or consumes oxygen in this scenario, so the recorded count is a transcription copy rather than a measurement."
+      },
+      "net-a.outputs.pressureKpa": {
+        "abs": 1.5,
+        "rel": 0.001,
+        "basis": "Invented: three runs agreed within 0.4 kPa end to end and the readout resolves 0.1 kPa; 1.5 kPa plus 0.1 % covers that spread with headroom for a model's per-species assumptions."
+      },
+      "net-a.thermal.temperature": {
+        "abs": 0.2,
+        "basis": "Invented: the temperature readout resolves 0.01 K and held constant across the runs; 0.2 K covers display rounding plus float storage at game precision."
+      }
+    }
+  },
+  "envelope": {
+    "inputs": {
+      "temperatureK": { "min": 293.15, "max": 293.15 },
+      "networkVolumeM3": { "min": 1, "max": 1 },
+      "totalMoles": { "min": 500, "max": 500 }
+    },
+    "notes": "One steady-state capture covers exactly the point it recorded, so each range is degenerate. A wider envelope needs more fixtures, not a wider guess (5.2.1)."
+  },
+  "sourceReference": {
+    "procedure": "Invented procedure for the example: load a sandbox world, build one gas network with one sensor, inject 100 mol oxygen and 400 mol nitrogen at 293.15 K, wait for the readings to settle, read the sensor three times, and record the build number from the game's own build display.",
+    "artifacts": ["synthetic example — no screenshots, logs, or save file exist"]
+  },
+  "verificationStatus": "captured",
+  "notes": "SYNTHETIC EXAMPLE (SIM-01). It demonstrates the format and is replayed by fixture tests against a trivial fake ideal-gas model; it must never be treated as evidence about the real game. A real fixture replaces every invented number and sets verificationStatus to 'verified' only through promoteFixture after a reviewed replay."
+}

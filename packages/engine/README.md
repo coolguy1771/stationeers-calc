@@ -214,6 +214,82 @@ the models whose declared `consumes` intersects the semantic pack diff's
 changed set — the set to mark Unverified in 6.6 step 6. Properties and
 constants match as separate namespaces.
 
+## Reference fixtures (`src/fixtures/`)
+
+In-game reference fixtures (SIM-01): the recorded-experiment format, the replay
+harness that compares a model against it, and the coverage view over a model's
+declared evidence. Spec sections of record: 10.3, 5.2, 5.2.1, 5.4, 6.1 Adapter D.
+The operator procedure is [`src/fixtures/CAPTURE-WORKFLOW.md`](./src/fixtures/CAPTURE-WORKFLOW.md).
+
+### The document (`schema.ts`)
+
+One fixture = one controlled experiment: `gameBuild` + `branch`, `capturedAt`,
+`capturedBy` (operator/method/notes), `scenario` (inventories by network,
+topology summary, device settings, and the numeric `conditions` the model's
+envelope names), `observation` (tick length + provenance, tick count, sample
+cadence, run count), `ticks` (the verbatim samples), `expected` (the curated
+assertions the model must reproduce), `tolerances` (per quantity, `abs + rel ×
+|expected|`, each with a mandatory `basis`), `envelope` (what the capture covers),
+`sourceReference`, and `verificationStatus` (`'captured'` | `'verified'`).
+
+Quantity keys are built in `quantities.ts` and nowhere else:
+`<network>.moles.<speciesId>.<phase>`, `<network>.thermal.<kind>`,
+`<network>.outputs.<name>`.
+
+No field has a default, and the schema cross-checks a hand-authored capture:
+tick sequence and window (`tickCount` = last tick, `timeS` = `tickCount ×
+tickLengthS`), tick-0 sample vs scenario inventory, `expected` vs the recorded
+sample at that tick, one tolerance per asserted quantity and no orphan tolerance,
+and envelope inputs that the capture actually recorded. Every rejection carries
+the document path (`describeFixtureIssues`).
+
+### Replay (`replay.ts`)
+
+```ts
+const verdict = replayFixture(fixture, behaviorModel, finalStateModel((scenario) => ({
+  'net-a.outputs.pressureKpa': pressure(scenario),
+})));
+verdict.outcome;      // 'pass' | 'fail'
+verdict.statusClaim;  // 'verified' | 'unverified'
+verdict.worst;        // largest deviation/allowed, with tick and quantity
+```
+
+A model is `(scenario, observation) => ModelRun` — a per-tick series
+(`perTickModel`) or a final state (`finalStateModel`, placed at
+`observation.tickCount`). It never sees `expected`.
+
+`statusClaim` is `'verified'` only for a passing replay **and** a scenario inside
+the model's declared envelope **and** a fixture listed in `fixtureIds` **and** a
+capture on the pinned `gameBuild`. Everything else is `'unverified'` plus a §8
+diagnostic: `SIM-FIXTURE-QUANTITY-MISMATCH`, `SIM-FIXTURE-MISSING-QUANTITY`,
+`SIM-FIXTURE-NON-NUMERIC-QUANTITY`, `SIM-FIXTURE-MISSING-TOLERANCE`,
+`SIM-FIXTURE-UNDECLARED`, `SIM-INCOMPATIBLE-BUILD`, `SIM-FIXTURE-NO-EVIDENCE`,
+`SIM-FIXTURE-MODEL-ERROR`, and the envelope's own codes. A missing or non-numeric
+quantity is a failure, not a skip (8: an unsupported result is not a pass), and a
+throwing model fails that one fixture instead of aborting the run. `promoteFixture`
+is the only writer of `verificationStatus: 'verified'`, and it refuses anything
+but a `'verified'` claim.
+
+### Coverage (`coverage.ts`)
+
+`reportModelFixtureCoverage(model, fixtures, replayModel)` is the §6.6 step 7
+surface: which declared fixtures are missing (`SIM-FIXTURE-MISSING`), pending
+(passing but still `'captured'`, `SIM-FIXTURE-PENDING`), failing (the replay's
+own codes, plus `SIM-FIXTURE-REGRESSION` when a stored-verified fixture now
+diverges), or undeclared (`SIM-FIXTURE-UNDECLARED`), and which declared envelope
+ranges no verified fixture covers (`SIM-ENVELOPE-UNCOVERED`, over
+`collectCoveredEnvelope`'s union of the verified fixtures' envelopes only).
+`ready` is true only when nothing is missing/pending/failing/uncovered and at
+least one fixture is verified — the precondition for a Verified claim, not a
+status.
+
+### Not here
+
+No fixture contains game data yet: capturing one needs a clean vanilla install
+and a human operator (SIM-01 stays open until then). `examples/` holds one
+synthetic document with invented values, used by the tests; SIM-02 consumes the
+format for the §13 #11 calculations.
+
 ## Validation
 
 `bun run typecheck && bun run test` from the repo root. Spec 5.5's

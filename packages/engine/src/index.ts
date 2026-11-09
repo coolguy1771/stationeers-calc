@@ -7,4 +7,5 @@
 export * from './numerics/index';
 export * from './jobs/index';
 export * from './models/index';
+export * from './fixtures/index';
 
