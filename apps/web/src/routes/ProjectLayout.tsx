@@ -8,6 +8,7 @@ import { Separator } from '../components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
 import { cn, shortHash } from '../lib/utils';
 import { stubbedAction } from '../lib/stubs';
+import { startPersistence } from '../state/persistence';
 import { useProjectSnapshot } from '../state/projectStore';
 import { useUiStore } from '../state/uiStore';
 import { WORKSPACE_TABS } from './workspaceTabs';
@@ -34,6 +35,12 @@ export function ProjectLayout() {
     setActiveProject(projectId ?? null);
     return () => setActiveProject(null);
   }, [projectId, setActiveProject]);
+
+  useEffect(() => {
+    // Autosave begins with the workspace: the seeded project gets its first
+    // write, then every committed revision is scheduled (2.2.1).
+    startPersistence();
+  }, []);
 
   useEffect(() => {
     setActiveTab(activeTab);

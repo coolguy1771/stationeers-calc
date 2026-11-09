@@ -19,11 +19,6 @@ import type { EntityId } from '@stationeers/domain';
 export type WorkspaceTab = 'schematic' | 'physical' | 'catalog' | 'analysis';
 
 /** Shared selection across both editors (SYNC-004) — one instance id. */
-/** Save-state placeholder machine (7.1 "show unsaved/error states").
- * Wired to real persistence in FND-03/FND-04; the indicator already consumes it. */
-export type SaveStatus = 'saved' | 'dirty' | 'saving' | 'error';
-
-/** Shared selection across both editors (SYNC-004) — one instance id. */
 export type SelectionRef =
   | { kind: 'device-instance'; id: EntityId }
   | { kind: 'intent'; id: EntityId }
@@ -34,20 +29,16 @@ interface UiState {
   activeProjectId: EntityId | null;
   activeTab: WorkspaceTab | null;
   selection: SelectionRef;
-  saveStatus: SaveStatus;
   setActiveProject: (id: EntityId | null) => void;
   setActiveTab: (tab: WorkspaceTab | null) => void;
   setSelection: (selection: SelectionRef) => void;
-  setSaveStatus: (status: SaveStatus) => void;
 }
 
 export const useUiStore = create<UiState>()((set) => ({
   activeProjectId: null,
   activeTab: null,
   selection: null,
-  saveStatus: 'saved',
   setActiveProject: (id) => set({ activeProjectId: id }),
   setActiveTab: (tab) => set({ activeTab: tab }),
   setSelection: (selection) => set({ selection }),
-  setSaveStatus: (saveStatus) => set({ saveStatus }),
 }));
