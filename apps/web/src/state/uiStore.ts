@@ -2,22 +2,23 @@ import { create } from 'zustand';
 import type { EntityId } from '@stationeers/domain';
 
 /*
- * SPEC SEAM — canonical model store (FND-04, wave 2).
+ * SPEC SEAM — canonical model store (FND-04) and persistence wiring.
  *
  * This store is TRANSIENT UI STATE ONLY (spec 2.1: "Zustand for transient UI
  * state only (selection, hover, tool mode, viewport)"). The canonical project
  * model — devices, placements, construction, connections, intents, scenarios,
- * settings — never lives here. It belongs to the single canonical store
- * outside any rendering library, with command/patch log, inverse patches,
- * monotonic revision IDs, and undo/redo (spec 2.2.1); both editors re-derive
- * their views from it. When FND-04 lands, selectors over the canonical store
- * replace the mock data in `src/mocks/` one-for-one — no UI code above this
- * seam should change.
+ * settings — lives in the single canonical store in `./projectStore.ts`, with
+ * command/patch log, inverse patches, monotonic revision IDs, and undo/redo
+ * (spec 2.2.1). Both editors re-derive their views from that store, so nothing
+ * here may ever hold project data: what is listed below is UI-only and is
+ * allowed to be lost on reload. Save status is not here either — it is a real
+ * persistence outcome, not a UI flag.
  */
 
 /** Workspace tabs (spec 3: dual editor + catalog + analysis). */
 export type WorkspaceTab = 'schematic' | 'physical' | 'catalog' | 'analysis';
 
+/** Shared selection across both editors (SYNC-004) — one instance id. */
 /** Save-state placeholder machine (7.1 "show unsaved/error states").
  * Wired to real persistence in FND-03/FND-04; the indicator already consumes it. */
 export type SaveStatus = 'saved' | 'dirty' | 'saving' | 'error';

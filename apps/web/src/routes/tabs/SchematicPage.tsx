@@ -1,23 +1,25 @@
-import {
-  definitionById,
-  instanceById,
-  mockDeviceInstances,
-  mockDiagnostics,
-  mockIntentTopology,
-  mockIntents,
-} from '../../mocks';
+import type { DeviceInstance, EntityId } from '@stationeers/domain';
+import { definitionById, mockDiagnostics, mockIntentTopology } from '../../mocks';
 import { DiagnosticsPanel } from '../../components/DiagnosticsPanel';
 import { IntentStatusChip } from '../../components/status/IntentStatusChip';
 import { Placeholder } from '../../components/Placeholder';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { useProject } from '../../state/projectStore';
 
 /**
- * Schematic tab (spec 3.1). The React Flow canvas is a mount point only —
- * React Flow never becomes the authoritative data model (spec 2.2). The right
- * rail previews the intent/connection inspector: intents are canonical stored
- * entities (3.3); their topology status is derived, never stored (9.1).
+ * Schematic tab (spec 3.1). The React Flow canvas is a mount point only — React
+ * Flow never becomes the authoritative data model (spec 2.2). The right rail
+ * previews the intent inspector and reads intents and device instances straight
+ * from the canonical store: intents are canonical stored entities (3.3) and
+ * their topology status stays DERIVED, never stored (9.1) — the display map in
+ * `src/mocks/intents.ts` stands in for that derivation until DOM-01.
  */
 export function SchematicPage() {
+  const project = useProject();
+  const instancesById = new Map<EntityId, DeviceInstance>(
+    project.devices.map((instance) => [instance.id, instance]),
+  );
+
   return (
     <div className="flex h-full min-h-0 gap-3">
       <Placeholder
@@ -45,9 +47,14 @@ export function SchematicPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
-            {mockIntents.map((intent) => {
-              const fromInstance = instanceById(intent.from.instanceId);
-              const toInstance = instanceById(intent.to.instanceId);
+            {project.intents.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">
+                No connection intents in the project. Intents are optional (SYNC-014).
+              </p>
+            ) : null}
+            {project.intents.map((intent) => {
+              const fromInstance = instancesById.get(intent.from.instanceId);
+              const toInstance = instancesById.get(intent.to.instanceId);
               const fromName = fromInstance ? definitionById(fromInstance.definitionId)?.displayName : undefined;
               const toName = toInstance ? definitionById(toInstance.definitionId)?.displayName : undefined;
               return (
@@ -68,8 +75,8 @@ export function SchematicPage() {
               );
             })}
             <p className="text-[11px] text-muted-foreground">
-              {mockDeviceInstances.length} device instances in the mock project · selecting syncs across both
-              editors (SYNC-004).
+              {project.devices.length} device instances in the project · selecting syncs across
+              both editors (SYNC-004).
             </p>
           </CardContent>
         </Card>

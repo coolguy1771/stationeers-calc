@@ -31,14 +31,16 @@ import { Label } from '../components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
 import { formatRelativeTime, shortHash } from '../lib/utils';
 import { stubbedAction } from '../lib/stubs';
-import { mockProjects } from '../mocks';
+import { useProject } from '../state/projectStore';
 
 /**
- * Projects list (7.1). Mocked until persistence (FND-03) supplies real
- * projects; create/rename/archive/delete are stubbed affordances with TODO
- * toasts naming the owning backlog item.
+ * Projects list (7.1). Rows come from the canonical store, so the single seeded
+ * project shows its live `meta` (name, pinned pack, timestamps). Creating,
+ * renaming, archiving, deleting and listing *persisted* projects is project
+ * management (7.1) and stays stubbed with a TODO naming it.
  */
 export function ProjectsPage() {
+  const project = useProject().meta;
   const [createOpen, setCreateOpen] = useState(false);
   const [renameTarget, setRenameTarget] = useState<ProjectMeta | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ProjectMeta | null>(null);
@@ -51,7 +53,8 @@ export function ProjectsPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Offline engineering calculator and dual-editor workbench.{' '}
             <span className="text-muted-foreground/70">
-              Project list is mocked until persistence (FND-03) lands.
+              One demo project is seeded into the canonical store for this session; creating
+              and listing persisted projects lands with project management (spec 7.1).
             </span>
           </p>
         </div>
@@ -65,15 +68,13 @@ export function ProjectsPage() {
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {mockProjects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            onRename={() => setRenameTarget(project)}
-            onDelete={() => setDeleteTarget(project)}
-            onArchive={() => stubbedAction(`Archive “${project.name}” (spec 7.1)`, 'FND-03')}
-          />
-        ))}
+        <ProjectCard
+          key={project.id}
+          project={project}
+          onRename={() => setRenameTarget(project)}
+          onDelete={() => setDeleteTarget(project)}
+          onArchive={() => stubbedAction(`Archive “${project.name}” (spec 7.1)`, '7.1 project management')}
+        />
       </div>
 
       {/* Create */}
@@ -84,7 +85,7 @@ export function ProjectsPage() {
         description="A project pins one game-data pack; the pack hash is recorded with the project (spec 7.1)."
         submitLabel="Create"
         onSubmit={(name) => {
-          stubbedAction(`Create project “${name}” (spec 7.1)`, 'FND-03');
+          stubbedAction(`Create project “${name}” (spec 7.1)`, '7.1 project management');
           setCreateOpen(false);
         }}
       />
@@ -100,7 +101,7 @@ export function ProjectsPage() {
         initialValue={renameTarget?.name}
         submitLabel="Rename"
         onSubmit={(name) => {
-          stubbedAction(`Rename project to “${name}” (spec 7.1)`, 'FND-03');
+          stubbedAction(`Rename project to “${name}” (spec 7.1)`, '7.1 project management');
           setRenameTarget(null);
         }}
       />
@@ -121,7 +122,7 @@ export function ProjectsPage() {
             <Button
               variant="destructive"
               onClick={() => {
-                stubbedAction(`Delete “${deleteTarget?.name}” (spec 7.1)`, 'FND-03');
+                stubbedAction(`Delete “${deleteTarget?.name}” (spec 7.1)`, '7.1 project management');
                 setDeleteTarget(null);
               }}
             >
