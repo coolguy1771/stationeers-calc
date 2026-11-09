@@ -24,6 +24,7 @@ Bun workspaces. Package `exports` point at TypeScript source; Vite, Vitest, and 
 - **Worker jobs** — every job carries the revision ID it started on; stale results are discarded or marked, never silently applied (§5.6).
 - **Cache invalidation** — per-network / per-subgraph digests, never whole-project (§9.3).
 - **Data packs** — versioned manifest with build, branch (stable only for published), tool versions, digests, coverage report, and channel: published vs user-generated (§6.4, §6.7).
+- **Pack diff and invalidation (§6.6)** — `packages/packs` diffs two packs (`diffPacks`), reports coverage and publish blockers (`provenanceCoverageReport`), and applies the result to the behavior-model registry (`planModelInvalidation` → engine `findModelsAffectedBy`). This makes `packs` depend on `engine` for the one query that owns "which model consumes this name"; the edge is one-way — `engine` must never import `packs`. If engine work ever needs the diff, the bridge moves into the release tool that owns both.
 
 ## Determinism policy (§5.1.1, §5.5)
 
