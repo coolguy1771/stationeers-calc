@@ -6,4 +6,5 @@
 
 export * from './numerics/index';
 export * from './jobs/index';
+export * from './models/index';
 
