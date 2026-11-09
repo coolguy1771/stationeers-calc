@@ -11,7 +11,9 @@ quality/provenance of every one of their properties.
 | `load.ts` | `loadPack`/`loadPackJson`/`loadPackBytes` — untrusted-input loading (§9.4) |
 | `quality.ts` | The §6.5 levels, promotion input, property resolver, and the Verified link |
 | `input.ts` | The extraction-input contract this package accepts (IR v2, coverage, manifest) |
-| `diff.ts` | EXT-04 seam: changelog types + a `diffPacks` that fails loudly (not implemented) |
+| `diff.ts` | `diffPacks` — the semantic diff of two packs, and the §6.6 step 6 invalidation feed |
+| `provenance-coverage.ts` | `provenanceCoverageReport` — §6.5 tallies, missing joins, and what blocks publishing |
+| `invalidation.ts` | `planModelInvalidation` — applies a changelog to the behavior-model registry |
 
 > [!WARNING]
 > **Nothing is validated yet.** Every value a pack carries today is
@@ -169,16 +171,77 @@ keys, counts must match the payload), the content hash (`PACK-HASH-MISMATCH`),
 and data-quality invariants (`PACK-QUALITY-INVARIANT`: a validated value needs an
 approval and a verified unit). The result is deep-frozen.
 
-## What EXT-04 needs from this package
+## Semantic diff (§6.6 steps 4–6)
 
-`diff.ts` defines the changelog types (`PropertyChange`, `EntityChange`,
-`CoverageChange`, `PackChangelog`) and a `diffPacks(prev, next)` that throws
-`PACK-DIFF-NOT-IMPLEMENTED`. The diff can rely on: stable entity ids (recipe ids
-are `"<family>/<prefabId>[#n]"`), payload arrays sorted by id, per-property
-quality and provenance, `coverage.joins`, and `sourceDigests` (which files
-changed). `PackChangelog.invalidatingProperties` is the feed for §6.6 step 6:
-intersect it with each behavior model's declared `consumes` to decide what drops
-to Unverified.
+```ts
+import { diffPacks, planModelInvalidation, provenanceCoverageReport } from '@stationeers/packs';
+
+const changelog = diffPacks(lastPublishedPack, candidatePack);
+const report = provenanceCoverageReport(candidatePack, changelog);
+const plan = planModelInvalidation(modelRegistry, changelog);
+```
+
+`diffPacks(previous, next)` is pure and deterministic: the same two packs always
+produce the same changelog (byte-identical under `canonicalJson`), whatever the
+payload order, property-map insertion order, or JSON key order. It reports:
+
+| Changelog field | What moved |
+|---|---|
+| `entities[]` | Per entity type and stable id: `added` / `removed` / `changed`, with `properties[]` and `fields[]` |
+| `properties[]` | Per property: `kinds` (`added`, `removed`, `value-changed`, `quality-changed`, `provenance-changed`), `before`/`after` entries, `beforeValue`/`afterValue`, `qualityChange` (with `direction`), and `invalidating` |
+| `fields[]` | Entity data the property map does not address — ingredient names, recipe family, record-level provenance, device definition keys — as canonical JSON |
+| `coverage` | Family mapping transitions, join transitions, control mappings, missing-field delta, per-code diagnostic deltas, §6.5/per-family counters, and source-file add/remove/change |
+| `manifest` | `gameBuild`, `gameBranch`, `channel`, `toolVersions` (extractor + IR), `normalizationVersion`, `behaviorModelCompatibility`, `extractionDate`, `entityCounts` — each only when it moved |
+| `invalidatingProperties` / `invalidatingConstants` | Sorted names of the inputs whose value or §6.5 level moved *downward* — the step 6 feed |
+| `identical` | True when the two packs carry the same game data (entity, coverage, and manifest movement ignored for `extractionDate` and source digests) |
+
+### What invalidates a model
+
+`invalidatingProperties` is what §6.6 step 6 consumes, so its semantics are
+deliberate:
+
+- **A value change invalidates.** Including a quantity's unit semantics: `3` with
+  an unknown unit and `3 s` are different inputs.
+- **A quality downgrade invalidates.** `extracted-and-validated →
+  extracted-unverified` (or unverified → missing, unverified → conflicting) means
+  a model can no longer stand behind a Verified result. Levels are ranked
+  `validated > inferred > unverified > missing > conflicting` (`QUALITY_RANK`).
+- **A quality improvement does not invalidate.** `missing → unverified`,
+  `unverified → validated`: nothing that was reported became wrong, so the model
+  is reported but not marked. (An improvement that *also* lands a value is still
+  a value change, and does invalidate on that basis.)
+- **A pure provenance change does not invalidate.** Same value, same level, new
+  source file/path or approval: the input the model reads is identical.
+- **Appearing or disappearing values invalidate**, including every property of an
+  added or removed entity. The feed is name-granular (models declare names, spec
+  5.3), so this can over-invalidate a model that reads the same name on another
+  entity — a needless re-verification, never a stale Verified result.
+
+Properties and constants are separate namespaces end to end: a changed property
+named `time` does not touch a model that consumes the *constant* `time`. The pack
+format has no pack-level constants yet, so `invalidatingConstants` is always empty
+today — reported as a gap rather than guessed at.
+
+### Applying the diff (§6.6 step 6)
+
+`planModelInvalidation(registry, changelog)` uses the engine's
+`findModelsAffectedBy` (the one definition of "affected") and returns, per model:
+the changed property/constant names it declared, its status before, the status to
+record, and a one-line reason. Only a model that was `verified` is marked
+`unverified`; `unverified` stays, and `unsupported`/`incompatible` are never
+raised. The registry is not modified — the caller applies the statuses.
+
+### Coverage and the publishing gate
+
+`provenanceCoverageReport(pack, changelog?)` summarizes per entity type how many
+property entries sit at each §6.5 level, how many moved (and how many of those
+invalidate), which joins are supplied and which are missing, and returns
+`blockers` — why the pack may not publish yet (`PUBLISH-NOTHING-VALIDATED`,
+`PUBLISH-JOIN-MISSING`, `PUBLISH-DEVICES-EMPTY`, `PUBLISH-MISSING-FIELDS`,
+`PUBLISH-FAMILY-UNMAPPED`, `PUBLISH-DIAGNOSTIC-ERROR`,
+`PUBLISH-BRANCH-NOT-STABLE`, `PUBLISH-BEHAVIOR-MODELS-INCOMPATIBLE`). An empty
+blocker list clears the gates *this report covers*; §6.8 legal review and the
+human fixture capture sit outside it.
 
 ## What still blocks a published pack
 

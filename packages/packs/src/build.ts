@@ -57,6 +57,7 @@ import {
 import {
   PromotionInputSchema,
   resolveEntityProperty,
+  tallyPropertyQuality,
   type PackEntityType,
   type PackedEntity,
   type PromotionInput,
@@ -391,23 +392,6 @@ function applyPromotions(
       },
     };
   }
-}
-
-/** Tally every property entry by §6.5 level (all five levels present, zeros included). */
-function tallyPropertyQuality(entities: { properties: Record<string, PropertyQuality> }[]): Record<DataQuality, number> {
-  const counts: Record<DataQuality, number> = {
-    'extracted-and-validated': 0,
-    'extracted-unverified': 0,
-    missing: 0,
-    conflicting: 0,
-    inferred: 0,
-  };
-  for (const entity of entities) {
-    for (const property of Object.values(entity.properties)) {
-      counts[property.quality] += 1;
-    }
-  }
-  return counts;
 }
 
 /**

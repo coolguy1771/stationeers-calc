@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@stationeers/domain": "workspace:*",
+    "@stationeers/engine": "workspace:*",
     "zod": "^4.6.6"
   }
 }

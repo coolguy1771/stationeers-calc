@@ -52,8 +52,8 @@ export const PackErrorCode = {
   QualityInvariant: 'PACK-QUALITY-INVARIANT',
   /** A capability claim consumes a property that is not validated (spec 6.5). */
   CapabilityUnvalidatedInput: 'PACK-CAPABILITY-UNVALIDATED-INPUT',
-  /** EXT-04's diff is not implemented yet (seam). */
-  DiffNotImplemented: 'PACK-DIFF-NOT-IMPLEMENTED',
+  /** A changelog was used against a pack it does not describe (EXT-04). */
+  DiffPackMismatch: 'PACK-DIFF-PACK-MISMATCH',
 } as const;
 
 export type PackErrorCode = (typeof PackErrorCode)[keyof typeof PackErrorCode];

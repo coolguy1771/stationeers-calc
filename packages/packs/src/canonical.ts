@@ -31,6 +31,15 @@ export function canonicalJson(value: unknown): string {
 }
 
 /**
+ * Code-unit ordering for ids, property names, and every other string a pack
+ * diff sorts. Explicit (never locale-aware) so output order is a property of the
+ * data, not of the machine that ran the diff.
+ */
+export function compareStrings(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/**
  * SHA-256 of a string or byte sequence, lowercase hex.
  *
  * Uses WebCrypto so the same code hashes in the browser loader and in the Bun

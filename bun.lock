@@ -75,6 +75,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@stationeers/domain": "workspace:*",
+        "@stationeers/engine": "workspace:*",
         "zod": "^4.6.6",
       },
     },

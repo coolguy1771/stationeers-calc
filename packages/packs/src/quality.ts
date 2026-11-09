@@ -18,10 +18,71 @@ import {
   MAX_PROPERTY_PATH_LENGTH,
   MAX_UNIT_LENGTH,
 } from './limits';
-import { IsoUtcSchema, type Pack, type PackedDevice, type PackedItem, type PackedNumber, type PackedRecipe, type ReadonlyPack } from './schema';
+import { IsoUtcSchema, type Pack, type PackedDevice, type PackedItem, type PackedNumber, type PackedRecipe, type PropertyQuality, type ReadonlyPack } from './schema';
 
 /** The only level that may back a Verified capability (spec 6.5). */
 export const VALIDATED_QUALITY = 'extracted-and-validated' as const;
+
+/**
+ * Rank of each §6.5 level, strongest first. This is the order a pack diff reads
+ * movement against (`qualityMovement`), and the reason §6.6 step 6 invalidates on
+ * a downgrade only — a model that was Verified on a stronger input can no longer
+ * be, while a stronger input never invalidates anything.
+ *
+ * `missing` ranks above `conflicting` on purpose: both are unusable, but a value
+ * that is absent is an acknowledged gap, while a contradiction between sources
+ * must still be resolved before the value means anything.
+ */
+export const QUALITY_RANK: Readonly<Record<DataQuality, number>> = {
+  'extracted-and-validated': 4,
+  inferred: 3,
+  'extracted-unverified': 2,
+  missing: 1,
+  conflicting: 0,
+};
+
+/** Direction a §6.5 level moved between two packs. */
+export type QualityMovement = 'improvement' | 'downgrade';
+
+/**
+ * The five §6.5 levels, strongest first. Derived from `QUALITY_RANK` (whose
+ * `Record<DataQuality, number>` type keeps it exhaustive), so a level can never
+ * be ranked in one place and forgotten in another.
+ */
+export const QUALITY_LEVELS: readonly DataQuality[] = (Object.keys(QUALITY_RANK) as DataQuality[]).sort(
+  (a, b) => QUALITY_RANK[b] - QUALITY_RANK[a],
+);
+
+/**
+ * Which way a level moved, or `undefined` when it did not move. A pack diff
+ * reports this per property; §6.6 step 6 acts on `downgrade` only.
+ */
+export function qualityMovement(before: DataQuality, after: DataQuality): QualityMovement | undefined {
+  if (before === after) return undefined;
+  return QUALITY_RANK[after] > QUALITY_RANK[before] ? 'improvement' : 'downgrade';
+}
+
+/**
+ * Count property entries per §6.5 level (all five keys present, zeros included),
+ * so a tally is comparable across packs without special-casing absent levels.
+ */
+export function tallyPropertyQuality(
+  entities: readonly { properties: Readonly<Record<string, PropertyQuality>> }[],
+): Record<DataQuality, number> {
+  const counts: Record<DataQuality, number> = {
+    'extracted-and-validated': 0,
+    'extracted-unverified': 0,
+    missing: 0,
+    conflicting: 0,
+    inferred: 0,
+  };
+  for (const entity of entities) {
+    for (const property of Object.values(entity.properties)) {
+      counts[property.quality] += 1;
+    }
+  }
+  return counts;
+}
 
 /** Entity collections a property can live in. */
 export const PACK_ENTITY_TYPES = ['recipe', 'item', 'device'] as const;
@@ -84,7 +145,7 @@ export const PromotionInputSchema = z
 export type PromotionInput = z.infer<typeof PromotionInputSchema>;
 
 /**
- * A resolved property value, for unit checks, promotion, and the diff seam.
+ * A resolved property value, for unit checks, promotion, and the pack diff.
  *
  * A number slot carries a writer, so a promotion that establishes unit
  * semantics writes the verified unit back to the one place the value lives
