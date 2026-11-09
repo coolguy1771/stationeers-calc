@@ -9,6 +9,6 @@
   "dependencies": {
     "@stationeers/domain": "workspace:*",
     "dexie": "^4.0.11",
-    "zod": "^3.25.76"
+    "zod": "^4.6.6"
   }
 }

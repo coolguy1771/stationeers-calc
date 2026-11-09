@@ -42,6 +42,6 @@ Packages import each other by workspace name (`@stationeers/domain`, …). Packa
 ## Conventions
 
 - TypeScript strict, `noUncheckedIndexedAccess` on. Prefer plain data + functions over classes in domain/engine code.
-- Zod (v3 API) for every runtime validation boundary.
+- Zod (v4 API, `^4.6.6`) for every runtime validation boundary.
 - Conventional Commits, one logical change per commit.
 - Diagnostics carry stable codes, severity, affected entity IDs, and the source rule (8).
