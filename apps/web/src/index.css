@@ -1,1 +1,117 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+
+/*
+ * Stationeers Engineer design system (UI-01).
+ *
+ * Mechanism: shadcn/ui CSS variables (spec 2.1 stack). Dark is the SHIPPED
+ * default — `:root` carries the dark values and index.html sets class="dark";
+ * light is the opt-in override on `.light`. The theme store owns the class.
+ *
+ * Visual language: instrument panel — neutral graphite surfaces, one cyan
+ * accent, small radii. Status semantics (spec 3.5 / 5.2 / 6.5 / 8) are
+ * encoded in components/status/ on top of these tokens:
+ *   filled chip      = model status (verification)
+ *   dashed fill      = experimental / unverified — never success
+ *   solid outline    = topology: buildable
+ *   dotted outline   = topology: conceptual (assumed)
+ * Never label anything "exact" unless it is Verified AND Buildable (3.5).
+ */
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
+
+  /* instrument-panel radius: near-square, not playful */
+  --radius: 0.25rem;
+
+  --background: oklch(0.17 0.006 250);
+  --foreground: oklch(0.93 0.004 250);
+  --card: oklch(0.2 0.007 250);
+  --card-foreground: oklch(0.93 0.004 250);
+  --popover: oklch(0.21 0.008 250);
+  --popover-foreground: oklch(0.93 0.004 250);
+  /* single accent: cold instrument cyan; status hues (green/amber/red) are
+     reserved for status vocabulary, never for decoration */
+  --primary: oklch(0.78 0.115 205);
+  --primary-foreground: oklch(0.17 0.02 205);
+  --secondary: oklch(0.26 0.007 250);
+  --secondary-foreground: oklch(0.9 0.005 250);
+  --muted: oklch(0.25 0.007 250);
+  --muted-foreground: oklch(0.66 0.01 250);
+  --accent: oklch(0.28 0.009 250);
+  --accent-foreground: oklch(0.93 0.004 250);
+  --destructive: oklch(0.62 0.19 25);
+  --destructive-foreground: oklch(0.98 0.005 25);
+  --border: oklch(0.3 0.008 250);
+  --input: oklch(0.33 0.009 250);
+  --ring: oklch(0.78 0.115 205);
+}
+
+.light {
+  --background: oklch(0.97 0.003 250);
+  --foreground: oklch(0.22 0.008 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.008 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.008 250);
+  --primary: oklch(0.55 0.11 205);
+  --primary-foreground: oklch(0.99 0.003 205);
+  --secondary: oklch(0.93 0.004 250);
+  --secondary-foreground: oklch(0.28 0.008 250);
+  --muted: oklch(0.93 0.004 250);
+  --muted-foreground: oklch(0.47 0.012 250);
+  --accent: oklch(0.92 0.006 250);
+  --accent-foreground: oklch(0.24 0.008 250);
+  --destructive: oklch(0.55 0.19 25);
+  --destructive-foreground: oklch(0.99 0.005 25);
+  --border: oklch(0.87 0.005 250);
+  --input: oklch(0.82 0.006 250);
+  --ring: oklch(0.55 0.11 205);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Numeric/technical content: tabular figures so columns of values align
+   (spec 2.1 pairing: IBM Plex Mono for values, IDs, hashes, coordinates). */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+

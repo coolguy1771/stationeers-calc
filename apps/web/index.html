@@ -1,8 +1,11 @@
 <!doctype html>
-<html lang="en">
+<!-- Dark is the shipped default (UI-01 design system); the .dark class here prevents a light flash.
+     The theme store (src/state/themeStore.ts) owns the class after hydration. -->
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
     <title>Stationeers Engineer</title>
   </head>
   <body>
