@@ -5,8 +5,8 @@ Source of truth: spec §16.1 (24 items, 167 SP). Status values: `done`, `in-prog
 | ID | SP | Item | Depends on | Status |
 |---|---|---|---|---|
 | FND-01 | 3 | Bun/Vite monorepo, TS strict, Vitest, CI | — | done (scaffold) |
-| FND-02 | 8 | Canonical project/device/port/intent/connection schemas | FND-01 | in-progress (wave 1) |
-| FND-03 | 5 | Local storage, persistence request, migration, import/export with §9.4 limits | FND-02 | in-progress (wave 1) |
+| FND-02 | 8 | Canonical project/device/port/intent/connection schemas | FND-01 | done — Zod v4 schemas mirroring the entity contract, bundle schema per §9.1 |
+| FND-03 | 5 | Local storage, persistence request, migration, import/export with §9.4 limits | FND-02 | done — Dexie store, migrations, gzip transfer with mid-stream bomb cap |
 | FND-04 | 5 | Canonical store, command/patch log, revision IDs | FND-02 | planned (wave 2) |
 | FND-05 | 5 | Deterministic numeric library + revision-aware worker job infra | FND-01 | done — decimal.js-backed transcendentals, f32/f64 helpers, revision-aware jobs |
 | EXT-01 | 5 | XML configuration and recipe extractor (Adapter A) | FND-01 | in-progress (wave 1) |
@@ -48,3 +48,4 @@ First development increment (§17): Pipe Network Designer vertical slice — pla
 - 2025-11-09: real Data XML obtained (43 files, gitignored) and inventoried — recipe format confirmed; blueprints.xml carries per-prefab 3D edge geometry. **Source install is modded → copy is format-reference only; clean vanilla source needed for pack generation (M0 prerequisite).**
 - 2025-11-09: FND-05 merged — deterministic numerics backed by decimal.js (isolated 50-digit clone; bit-exact on 88 reference fixtures), hand-rolled f32/f64 helpers + ordered summation, revision-aware job runner with Zod-v4-validated worker protocol. Decision: library-grade transcendentals over hand-ported fdlibm (transcription risk); fast paths deferred until profiling demands them (spec 2.1).
 - 2025-11-09: toolchain upgraded (TS7, vitest 5, oxlint — user's local changes adopted as fd49ccf; vite-env.d.ts added for TS7). UI foundation started early per user request: shell, routing, shadcn design system, and the spec's status-vocabulary components built against the frozen entity contract with mock data.
+- 2025-11-09: FND-02 + FND-03 merged — Zod-v4 schemas mirror the entity contract (drift-pinned by contract tests), project bundle per §9.1 with strict parsing and future-version rejection, Dexie store with autosave + persistent-storage request, deterministic migration registry, import/export with SHA-256 envelope and mid-stream 32 MiB decompression cap.
