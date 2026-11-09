@@ -16,11 +16,14 @@
     "preview": "bun run --cwd apps/web preview",
     "test": "bunx --bun vitest run",
     "test:watch": "bunx --bun vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
   },
   "devDependencies": {
-    "@types/node": "^22.15.21",
-    "typescript": "^5.8.3",
-    "vitest": "^4.1.11"
+    "@types/node": "^26.6.6",
+    "oxlint": "^1.93.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
   }
 }
