@@ -73,6 +73,10 @@
     "packages/packs": {
       "name": "@stationeers/packs",
       "version": "0.0.1",
+      "dependencies": {
+        "@stationeers/domain": "workspace:*",
+        "zod": "^4.6.6",
+      },
     },
     "packages/persistence": {
       "name": "@stationeers/persistence",
@@ -94,6 +98,7 @@
       },
       "dependencies": {
         "@stationeers/domain": "workspace:*",
+        "@stationeers/packs": "workspace:*",
         "fast-xml-parser": "^5.7.0",
         "zod": "^4.6.6",
       },
