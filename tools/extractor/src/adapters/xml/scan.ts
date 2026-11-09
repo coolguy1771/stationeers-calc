@@ -1,20 +1,24 @@
 /**
- * Directory scanner for the PROVISIONAL XML adapter (EXT-01).
+ * Directory scanner for Adapter A (EXT-01b).
  *
- * Walks an input directory (non-recursive), reads every *.xml file in sorted
- * order, and parses each with the PROVISIONAL grammar. Enforces the 9.4
- * untrusted-input bounds: file count limit, per-file size limit. Malformed
- * XML files are reported as errors and skipped — one bad file does not abort
- * the whole scan, but the pipeline reports them in the coverage report.
+ * Walks an input directory (non-recursive, i.e. `StreamingAssets/Data`), reads
+ * every *.xml file in sorted order, and parses each with the confirmed
+ * `<GameData>` grammar (`./gamedata`). Enforces the 9.4 untrusted-input bounds:
+ * file count limit, per-file size limit. Malformed XML files are reported as
+ * errors and skipped — one bad file does not abort the whole scan, but the
+ * pipeline reports them in the coverage report.
  *
- * PROVISIONAL FORMAT — NOT GAME DATA. Replaced with the real install path
- * when the real format is confirmed.
+ * The scan also returns what it SAW beyond the mapped records: one
+ * `FamilyObservation` per `GameData` child per file (including non-recipe
+ * families) and a tally of `<Recipe>` control elements, so the coverage report
+ * can state what was not extracted instead of silently dropping it.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Diagnostic } from '../../diagnostics';
+import type { ControlObservation, FamilyObservation } from '../../families';
 import type { RawRecord } from '../../ir/raw';
-import { parseProvisionalFile } from './provisional';
+import { parseGameDataFile } from './gamedata';
 
 /** Untrusted-input bounds (spec 9.4): generous but finite. */
 export const MAX_XML_FILES = 5_000;
@@ -29,6 +33,10 @@ export interface ScanResult {
   skippedFiles: string[];
   /** All *.xml files the scanner processed, sorted by name (including skipped). */
   scannedFiles: string[];
+  /** Every `GameData` child observed, per file; mapped or not. */
+  families: FamilyObservation[];
+  /** Tally of non-ingredient `<Recipe>` children across the scan. */
+  controls: ControlObservation[];
 }
 
 export interface ScanInputDirOptions {
@@ -39,9 +47,9 @@ export interface ScanInputDirOptions {
 }
 
 /**
- * Scan a directory for *.xml files and parse them with the PROVISIONAL
- * grammar. Throws when the input directory does not exist or when the
- * 9.4 bounds are exceeded.
+ * Scan a directory for *.xml files and parse them with the confirmed
+ * `<GameData>` grammar. Throws when the input directory does not exist or when
+ * the 9.4 bounds are exceeded.
  */
 export function scanInputDir(options: ScanInputDirOptions): ScanResult {
   const { inputDir } = options;
@@ -49,6 +57,14 @@ export function scanInputDir(options: ScanInputDirOptions): ScanResult {
   const skippedFiles: string[] = [];
   const records: RawRecord[] = [];
   const scannedFiles: string[] = [];
+  const families: FamilyObservation[] = [];
+  const controls = new Map<string, ControlObservation>();
+
+  /** Single sink: collect, and forward to the caller's sink when given. */
+  const sink = (diagnostic: Diagnostic): void => {
+    diagnostics.push(diagnostic);
+    options.onDiagnostics?.(diagnostic);
+  };
 
   let entries: string[];
   try {
@@ -73,7 +89,7 @@ export function scanInputDir(options: ScanInputDirOptions): ScanResult {
     try {
       stat = statSync(filePath);
     } catch {
-      diagnostics.push({
+      sink({
         code: 'XML-FILE-UNREADABLE',
         severity: 'error',
         message: `cannot stat input file ${fileName}`,
@@ -85,7 +101,7 @@ export function scanInputDir(options: ScanInputDirOptions): ScanResult {
     }
     if (!stat.isFile()) continue;
     if (stat.size > MAX_XML_BYTES) {
-      diagnostics.push({
+      sink({
         code: 'XML-FILE-TOO-LARGE',
         severity: 'error',
         message: `input file ${fileName} is ${stat.size} bytes; the limit is ${MAX_XML_BYTES} (spec 9.4)`,
@@ -101,7 +117,7 @@ export function scanInputDir(options: ScanInputDirOptions): ScanResult {
       text = readFileSync(filePath, 'utf8');
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
-      diagnostics.push({
+      sink({
         code: 'XML-FILE-UNREADABLE',
         severity: 'error',
         message: `cannot read input file ${fileName}: ${message}`,
@@ -113,18 +129,19 @@ export function scanInputDir(options: ScanInputDirOptions): ScanResult {
     }
 
     try {
-      const fileRecords = parseProvisionalFile(text, {
-        sourceFile: fileName,
-        onDiagnostics: (d) => {
-          diagnostics.push(d);
-          options.onDiagnostics?.(d);
-        },
-      });
-      records.push(...fileRecords);
+      const result = parseGameDataFile(text, { sourceFile: fileName, onDiagnostics: sink });
+      records.push(...result.records);
+      families.push(...result.families);
+      for (const observed of result.controls) {
+        const key = `${observed.element}\u0000${observed.mapping}`;
+        const existing = controls.get(key);
+        if (existing) existing.occurrences += observed.occurrences;
+        else controls.set(key, { ...observed });
+      }
     } catch (e) {
       // Malformed XML: report and skip, do not abort the scan.
       const message = e instanceof Error ? e.message : String(e);
-      diagnostics.push({
+      sink({
         code: 'XML-MALFORMED',
         severity: 'error',
         message,
@@ -132,9 +149,8 @@ export function scanInputDir(options: ScanInputDirOptions): ScanResult {
         sourceFile: fileName,
       });
       skippedFiles.push(fileName);
-      options.onDiagnostics?.(diagnostics[diagnostics.length - 1] as Diagnostic);
     }
   }
 
-  return { records, diagnostics, skippedFiles, scannedFiles };
+  return { records, diagnostics, skippedFiles, scannedFiles, families, controls: [...controls.values()] };
 }

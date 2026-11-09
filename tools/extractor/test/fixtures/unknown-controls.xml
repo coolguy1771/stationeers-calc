@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SYNTHETIC fixture: control elements that are recognized-but-unmapped,
+     unrecognized, or malformed. Invented values. -->
+<GameData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <InventedSmithyRecipes>
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotAlpha</PrefabName>
+      <Recipe>
+        <MetalOre>.5</MetalOre>
+        <RequiredMix Rule="Pure">
+          <Volatiles>1</Volatiles>
+        </RequiredMix>
+        <Enthalpy>
+          <Start>1</Start>
+          <Stop>2</Stop>
+        </Enthalpy>
+        <Time>three</Time>
+      </Recipe>
+    </RecipeData>
+
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotBeta</PrefabName>
+      <Recipe>
+        <MetalOre>1</MetalOre>
+        <Slag></Slag>
+        <Temperature>
+          <Start>900</Start>
+        </Temperature>
+      </Recipe>
+    </RecipeData>
+  </InventedSmithyRecipes>
+</GameData>

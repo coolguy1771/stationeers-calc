@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SYNTHETIC fixture: a family that names recipes but holds a record shape this
+     adapter does not map (<ProcessingData>). Invented values. -->
+<GameData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <InventedGrinderRecipes>
+    <ProcessingData>
+      <InputPrefab>ItemFixtureRaw</InputPrefab>
+      <OutputPrefab>ItemFixtureGround</OutputPrefab>
+      <Time>0.1</Time>
+      <In>1</In>
+      <Out>5</Out>
+    </ProcessingData>
+  </InventedGrinderRecipes>
+</GameData>

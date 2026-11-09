@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SYNTHETIC fixture: non-recipe families (build-shape geometry and a trader
+     table), reported as unmapped. Invented values. -->
+<GameData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Blueprint Id="BlueprintFixtureBox">
+    <Mesh Path="Meshes/Fixture/Box.obj" />
+    <Edge x1="0" y1="0" z1="0" x2="1" y2="0" z2="0" />
+    <Edge x1="1" y1="0" z1="0" x2="1" y2="0" z2="1" />
+  </Blueprint>
+
+  <TraderContactData>
+    <Contact Id="FixtureTrader" BuyModifier=".9" />
+  </TraderContactData>
+</GameData>

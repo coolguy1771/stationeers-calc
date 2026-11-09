@@ -1,5 +1,11 @@
-<!-- SYNTHETIC fixture — provisional format, not game data -->
-<recipes>
-  <recipe id="R_UNCLOSED displayName="Broken">
-    <input itemId="X" quantity="1" unit="g"/>
-</recipes>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SYNTHETIC fixture: <RecipeData> is never closed — malformed on purpose. -->
+<GameData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <InventedSmithyRecipes>
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotAlpha</PrefabName>
+      <Recipe>
+        <MetalOre>.5</MetalOre>
+      </Recipe>
+  </InventedSmithyRecipes>
+</GameData>

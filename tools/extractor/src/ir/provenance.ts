@@ -36,12 +36,16 @@ export type Provenance = z.infer<typeof ProvenanceSchema>;
 
 /**
  * Per-field provenance override. Attaches to a record when one field's
- * quality diverges from the record-level provenance — e.g. a unit-converted
- * quantity is 'inferred' with the calculation named in `notes`.
+ * quality or source location diverges from the record-level provenance —
+ * e.g. a quantity whose unit is unverified, a field absent from the source
+ * ('missing'), or a unit conversion that was inferred (calculation named in
+ * `notes`). `sourcePath` names the exact element that supplied the field, so
+ * a reviewer can check a single value without reading the whole record.
  */
 export const FieldProvenanceOverrideSchema = z.object({
   qualityLevel: QualityLevelSchema,
   notes: z.string().optional(),
+  sourcePath: z.string().optional(),
 });
 export type FieldProvenanceOverride = z.infer<typeof FieldProvenanceOverrideSchema>;
 
@@ -54,5 +58,10 @@ export function resolveFieldProvenance(
   override?: FieldProvenanceOverride,
 ): Provenance {
   if (!override) return base;
-  return { ...base, qualityLevel: override.qualityLevel, notes: override.notes };
+  return {
+    sourceFile: base.sourceFile,
+    sourcePath: override.sourcePath ?? base.sourcePath,
+    qualityLevel: override.qualityLevel,
+    ...(override.notes === undefined ? {} : { notes: override.notes }),
+  };
 }

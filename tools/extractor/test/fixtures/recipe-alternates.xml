@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SYNTHETIC fixture: two definitions of one output (alternates) and an exact
+     duplicate spelled differently (1 vs 1.0). Invented values. -->
+<GameData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <InventedSmithyRecipes>
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotAlpha</PrefabName>
+      <Recipe>
+        <MetalOre>.5</MetalOre>
+        <Time>3</Time>
+      </Recipe>
+    </RecipeData>
+
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotAlpha</PrefabName>
+      <Recipe>
+        <IngotAlpha>1</IngotAlpha>
+        <Time>1</Time>
+      </Recipe>
+    </RecipeData>
+
+    <RecipeData>
+      <PrefabName>ItemFixturePlate</PrefabName>
+      <Recipe>
+        <MetalOre>1</MetalOre>
+      </Recipe>
+    </RecipeData>
+
+    <RecipeData>
+      <PrefabName>ItemFixturePlate</PrefabName>
+      <Recipe>
+        <MetalOre>1.0</MetalOre>
+      </Recipe>
+    </RecipeData>
+  </InventedSmithyRecipes>
+</GameData>

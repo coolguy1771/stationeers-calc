@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SYNTHETIC fixture: real <GameData> STRUCTURE, invented values. -->
+<GameData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <InventedSmithyRecipes>
+
+    <!-- A comment inside the family element, as in the real files. -->
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotAlpha</PrefabName>
+      <Recipe>
+        <!-- Comments also appear between ingredients. -->
+        <MetalOre>.5</MetalOre>
+        <Slag>.25</Slag>
+        <Time>3</Time>
+        <Energy>120</Energy>
+        <Temperature>
+          <Start>900</Start>
+          <Stop>1500</Stop>
+        </Temperature>
+        <Pressure>
+          <Start>20000</Start>
+          <Stop>30000</Stop>
+        </Pressure>
+      </Recipe>
+      <Output>0.25</Output>
+    </RecipeData>
+
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotBeta</PrefabName>
+      <Recipe>
+        <MetalOre>1</MetalOre>
+        <Time>6</Time>
+      </Recipe>
+      <RecipeTier>TierTwo</RecipeTier>
+    </RecipeData>
+
+  </InventedSmithyRecipes>
+
+  <InventedPrinterRecipes>
+    <RecipeData>
+      <PrefabName>ItemFixtureGadget</PrefabName>
+      <Recipe>
+        <Slag>.125</Slag>
+        <Time>4</Time>
+      </Recipe>
+    </RecipeData>
+  </InventedPrinterRecipes>
+</GameData>

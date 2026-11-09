@@ -1,5 +1,5 @@
 /**
- * Pipeline orchestrator (EXT-01): scan -> normalize -> report -> serialize.
+ * Pipeline orchestrator (EXT-01b): scan -> normalize -> report -> serialize.
  *
  * Deterministic: the same input directory produces byte-identical
  * `ir.json`, `coverage.json`, and `manifest.json` on every run.
@@ -27,9 +27,10 @@ export interface ExtractionResult {
 }
 
 /**
- * Run the extraction pipeline for the PROVISIONAL XML adapter (EXT-01)
- * over an input directory. Throws when the input directory does not exist
- * or when the 9.4 bounds are exceeded.
+ * Run the extraction pipeline for Adapter A (the confirmed `<GameData>` XML
+ * format) over an input directory — normally `StreamingAssets/Data` of a clean
+ * vanilla install. Throws when the input directory does not exist or when the
+ * 9.4 bounds are exceeded.
  */
 export function runExtraction(inputDir: string): ExtractionResult {
   const scan = scanInputDir({ inputDir });
@@ -43,6 +44,8 @@ export function runExtraction(inputDir: string): ExtractionResult {
     missingFields: norm.missingFields,
     skippedFiles: scan.skippedFiles,
     inputDir: basename(inputDir),
+    families: scan.families,
+    controls: scan.controls,
   });
   const coverageJson = canonicalJson(coverage) + '\n';
 

@@ -1,10 +1,44 @@
-<!-- SYNTHETIC fixture — provisional format, not game data -->
-<recipes>
-  <recipe id="R_NO_DISPLAY_NAME">
-    <input itemId="X" quantity="1" unit="g"/>
-    <output itemId="Y" quantity="2" unit="kg"/>
-  </recipe>
-</recipes>
-<items>
-  <item id="I_NO_DISPLAY_NAME" category="Metals"/>
-</items>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SYNTHETIC fixture: records with required fields absent or malformed.
+     Invented values. -->
+<GameData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <InventedSmithyRecipes>
+    <!-- No <PrefabName>: no identity, record rejected. -->
+    <RecipeData>
+      <Recipe>
+        <MetalOre>.5</MetalOre>
+      </Recipe>
+    </RecipeData>
+
+    <!-- No <Recipe>: no ingredients, no declared output amount. -->
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotBeta</PrefabName>
+    </RecipeData>
+
+    <!-- No <Output>: output amount not declared. -->
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotGamma</PrefabName>
+      <Recipe>
+        <MetalOre>1</MetalOre>
+      </Recipe>
+    </RecipeData>
+
+    <!-- Non-numeric <Output>. -->
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotDelta</PrefabName>
+      <Recipe>
+        <MetalOre>2</MetalOre>
+      </Recipe>
+      <Output>lots</Output>
+    </RecipeData>
+
+    <!-- Element this adapter does not know at <RecipeData> level. -->
+    <RecipeData>
+      <PrefabName>ItemFixtureIngotEpsilon</PrefabName>
+      <Recipe>
+        <MetalOre>3</MetalOre>
+      </Recipe>
+      <Weight>3</Weight>
+    </RecipeData>
+  </InventedSmithyRecipes>
+</GameData>

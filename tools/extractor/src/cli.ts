@@ -3,7 +3,7 @@
  * Stationeers game-data extraction CLI (spec 6).
  *
  * Adapters:
- *   A — XML configuration and recipes (EXT-01)
+ *   A — XML configuration and recipes (EXT-01/EXT-01b)
  *   B — runtime Stationpedia extractor (EXT-02)
  *   C — geometry: footprints, connectors, orientations, grid sizes, volumes (EXT-05)
  *   D — behavior verification fixtures (SIM-01)
@@ -18,14 +18,17 @@ Usage:
   bun tools/extractor/src/cli.ts <adapter> [args]
 
 Adapters:
-  xml <inputDir> --out <outDir>    Adapter A: XML config/recipes -> normalized IR
+  xml <inputDir> --out <outDir>    Adapter A: recipe XML -> normalized IR
   stationpedia                     Adapter B: planned (EXT-02)
   geometry                         Adapter C: planned (EXT-05)
   behavior                         Adapter D: planned (SIM-01)
 
-Adapter A parses the PROVISIONAL XML format — NOT GAME DATA; see
-  tools/extractor/README.md limitations. Writes ir.json, coverage.json,
-  and manifest.json into outDir; byte-identical across runs on the same input.
+Adapter A reads the confirmed <GameData> recipe format from a CLEAN VANILLA
+  install: <SteamLibrary>/steamapps/common/Stationeers/rocketstation_Data/
+  StreamingAssets/Data. Mod content is out of scope (spec 6.3). Writes ir.json,
+  coverage.json, and manifest.json into outDir; byte-identical across runs on the
+  same input. Unit semantics and non-recipe families remain unresolved — see
+  tools/extractor/README.md limitations.
 `;
 
 const adapter = process.argv[2];
