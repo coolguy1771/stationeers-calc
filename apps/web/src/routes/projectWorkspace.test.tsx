@@ -170,4 +170,29 @@ describe('workspace — canonical store integration', () => {
       'false',
     );
   });
+
+  it('marks the analysis result stale once the store moves past its revision (5.6)', () => {
+    renderAt(`/project/${PROJECT_ID}/analysis`);
+
+    // Fresh: the result is tagged with the revision it was computed on.
+    const freshTag = document.querySelector('[data-result-revision]');
+    expect(freshTag).toBeInTheDocument();
+    expect(screen.queryByText(/project changed since this result/i)).not.toBeInTheDocument();
+    expect(document.querySelector('[data-stale-result="true"]')).not.toBeInTheDocument();
+
+    // A committed command bumps the revision, so the tagged result is now stale…
+    act(() => {
+      projectStore.dispatch({ type: 'renameProject', name: 'Renamed while analysing' });
+    });
+
+    expect(screen.getByText(/project changed since this result/i)).toBeInTheDocument();
+    const staleTag = document.querySelector('[data-stale-result="true"]');
+    expect(staleTag).toHaveAttribute('data-result-revision', freshTag!.getAttribute('data-result-revision'));
+    expect(staleTag).toHaveTextContent(new RegExp(`now at revision ${projectStore.revision}`));
+
+    // The dual-status vocabulary is untouched by staleness (3.5): still never exact.
+    expect(document.querySelector('[data-model-status="verified"]')).toBeInTheDocument();
+    expect(document.querySelector('[data-topology-status="conceptual"]')).toBeInTheDocument();
+    expect(screen.queryByText('Exact')).not.toBeInTheDocument();
+  });
 });

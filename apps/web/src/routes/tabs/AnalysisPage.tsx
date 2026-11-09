@@ -1,8 +1,8 @@
 import { FlaskConical, Play } from 'lucide-react';
-import type * as React from 'react';
 import type { CalculationResult } from '@stationeers/domain';
 import { CalculationResultStatus } from '../../components/status/ResultStatusSummary';
 import { DiagnosticsPanel } from '../../components/DiagnosticsPanel';
+import { ResultRevisionTag } from '../../components/ResultRevisionTag';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
@@ -10,7 +10,8 @@ import { Label } from '../../components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { shortHash } from '../../lib/utils';
 import { stubbedAction } from '../../lib/stubs';
-import { mockCalculationResult, mockDiagnostics } from '../../mocks';
+import { mockDiagnostics } from '../../mocks';
+import { useTaggedMockResult } from '../../state/analysis';
 
 /**
  * Engineering analysis tab (spec 7.5). Left: scenario form skeleton (real
@@ -21,6 +22,11 @@ import { mockCalculationResult, mockDiagnostics } from '../../mocks';
  * with every result (spec 13 #3, 1.1 #7).
  */
 export function AnalysisPage() {
+  // The mock result is tagged with the revision it was "computed" on; once the
+  // store moves past it the panel reports stale instead of current (5.6).
+  const tagged = useTaggedMockResult();
+  const { result } = tagged;
+
   return (
     <div className="flex h-full min-h-0 gap-3">
       <aside className="flex w-84 shrink-0 flex-col gap-3 overflow-y-auto">
@@ -31,14 +37,14 @@ export function AnalysisPage() {
           <CardContent className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="scenario-network">Network / intent reference</Label>
-              <Input id="scenario-network" readOnly value={mockCalculationResult.networkRef} className="font-mono text-xs" />
+              <Input id="scenario-network" readOnly value={result.networkRef} className="font-mono text-xs" />
             </div>
-            <ScenarioInput id="total-moles" label="Total moles (mol)" value={numberValue(mockCalculationResult.inputs.totalMoles)} />
-            <ScenarioInput id="temperature-k" label="Temperature (K)" value={numberValue(mockCalculationResult.inputs.temperatureK)} />
+            <ScenarioInput id="total-moles" label="Total moles (mol)" value={numberValue(result.inputs.totalMoles)} />
+            <ScenarioInput id="temperature-k" label="Temperature (K)" value={numberValue(result.inputs.temperatureK)} />
             <ScenarioInput
               id="assumed-volume"
               label="Assumed volume (m³)"
-              value={numberValue(mockCalculationResult.inputs.assumedVolumeM3)}
+              value={numberValue(result.inputs.assumedVolumeM3)}
               hint="Explicit user assumption for an unrouted network — forces Conceptual status (spec 4.7)."
             />
             <Button onClick={() => stubbedAction('Run analysis on revision-tagged worker job (spec 5.6)', 'SIM-02')}>
@@ -58,17 +64,18 @@ export function AnalysisPage() {
         <Card>
           <CardHeader className="gap-2">
             <div className="flex items-center justify-between gap-2">
-              <CardTitle className="font-mono text-sm">{mockCalculationResult.capabilityId}</CardTitle>
-              <span className="font-mono text-[11px] text-muted-foreground">network {mockCalculationResult.networkRef}</span>
+              <CardTitle className="font-mono text-sm">{result.capabilityId}</CardTitle>
+              <span className="font-mono text-[11px] text-muted-foreground">network {result.networkRef}</span>
             </div>
-            <CalculationResultStatus result={mockCalculationResult} />
+            <CalculationResultStatus result={result} />
+            <ResultRevisionTag tagged={tagged} />
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <ResultIO result={mockCalculationResult} />
+            <ResultIO result={result} />
             <div>
               <h4 className="text-[11px] tracking-wider text-muted-foreground uppercase">Explanation</h4>
               <ul className="mt-1.5 flex flex-col gap-1">
-                {mockCalculationResult.explanation.map((line) => (
+                {result.explanation.map((line) => (
                   <li key={line} className="flex gap-1.5 text-xs text-foreground/90">
                     <span aria-hidden className="text-primary/70">▸</span>
                     <span>{line}</span>
@@ -76,7 +83,7 @@ export function AnalysisPage() {
                 ))}
               </ul>
             </div>
-            <Provenance result={mockCalculationResult} />
+            <Provenance result={result} />
           </CardContent>
         </Card>
         <DiagnosticsPanel diagnostics={mockDiagnostics} />
