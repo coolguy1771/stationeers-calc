@@ -10,7 +10,7 @@ Source of truth: spec §16.1 (24 items, 167 SP). Status values: `done`, `in-prog
 | FND-04 | 5 | Canonical store, command/patch log, revision IDs | FND-02 | planned (wave 2) |
 | FND-05 | 5 | Deterministic numeric library + revision-aware worker job infra | FND-01 | in-progress (wave 1) |
 | EXT-01 | 5 | XML configuration and recipe extractor (Adapter A) | FND-01 | in-progress (wave 1) |
-| EXT-02 | 8 | Runtime Stationpedia extractor (license review + fallback plan) | FND-01 | blocked — license research in wave 1, sign-off is human (R20) |
+| EXT-02 | 8 | Runtime Stationpedia extractor (license review + fallback plan) | FND-01 | decision made: independent extractor (see research-2025-11-09-extraction.md); human EULA review still owed before publishing packs (6.8) |
 | EXT-03 | 8 | Normalize data, versioned pack manifests | EXT-01, EXT-02 | planned |
 | EXT-04 | 5 | Semantic pack diff, provenance coverage, input invalidation | EXT-03, SIM-00 | planned |
 | EXT-05 | 8 | Spike: footprints, connectors, orientations, grid sizes, pipe volumes | EXT-02 | blocked — needs a game install (human) |
@@ -44,3 +44,4 @@ First development increment (§17): Pipe Network Designer vertical slice — pla
 ## Work log
 
 - 2025-11-09: FND-01 scaffold committed; wave 1 dispatched (FND-02 + FND-03, FND-05, EXT-01, EXT-02 license/format research).
+- 2025-11-09: research landed — both community extractors are unlicensed; decision: independent Adapter B extractor, repos used as references only. Geometry confirmed absent from Stationpedia → EXT-05 runtime probe is the real M0 gate. See research-2025-11-09-extraction.md.
