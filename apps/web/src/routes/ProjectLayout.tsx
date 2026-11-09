@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useParams } from 'react-router-dom';
 import { SaveStatusIndicator } from '../components/SaveStatusIndicator';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { UndoRedoControls } from '../components/UndoRedoControls';
 import { Button } from '../components/ui/button';
 import { Separator } from '../components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
@@ -10,6 +11,7 @@ import { cn, shortHash } from '../lib/utils';
 import { stubbedAction } from '../lib/stubs';
 import { startPersistence } from '../state/persistence';
 import { useProjectSnapshot } from '../state/projectStore';
+import { useUndoRedoShortcuts } from '../state/undoRedo';
 import { useUiStore } from '../state/uiStore';
 import { WORKSPACE_TABS } from './workspaceTabs';
 
@@ -49,6 +51,8 @@ export function ProjectLayout() {
 
   const { project: snapshotProject, revision } = useProjectSnapshot();
   const project = snapshotProject.meta.id === projectId ? snapshotProject.meta : undefined;
+
+  useUndoRedoShortcuts();
 
   if (!project) {
     return (
@@ -111,6 +115,7 @@ export function ProjectLayout() {
           </TooltipContent>
         </Tooltip>
         <SaveStatusIndicator />
+        <UndoRedoControls />
         <Separator orientation="vertical" className="h-6" />
         <Button
           variant="outline"

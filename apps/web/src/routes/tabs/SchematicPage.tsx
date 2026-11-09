@@ -1,10 +1,12 @@
-import type { DeviceInstance, EntityId } from '@stationeers/domain';
+import { Trash2 } from 'lucide-react';
+import type { ConnectionIntent, DeviceInstance, EntityId } from '@stationeers/domain';
 import { definitionById, mockDiagnostics, mockIntentTopology } from '../../mocks';
 import { DiagnosticsPanel } from '../../components/DiagnosticsPanel';
 import { IntentStatusChip } from '../../components/status/IntentStatusChip';
 import { Placeholder } from '../../components/Placeholder';
+import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { useProject } from '../../state/projectStore';
+import { runProjectCommand, useProject } from '../../state/projectStore';
 
 /**
  * Schematic tab (spec 3.1). The React Flow canvas is a mount point only — React
@@ -13,6 +15,10 @@ import { useProject } from '../../state/projectStore';
  * from the canonical store: intents are canonical stored entities (3.3) and
  * their topology status stays DERIVED, never stored (9.1) — the display map in
  * `src/mocks/intents.ts` stands in for that derivation until DOM-01.
+ *
+ * Deleting an intent is a real command (`removeEntity`), so it bumps the
+ * revision, is written by autosave, and is undone by the shell's undo/redo —
+ * the smallest honest proof that the command loop is wired end to end.
  */
 export function SchematicPage() {
   const project = useProject();
@@ -61,7 +67,18 @@ export function SchematicPage() {
                 <div key={intent.id} className="rounded-md border border-border p-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-medium">{intent.label ?? intent.id}</span>
-                    <IntentStatusChip status={mockIntentTopology[intent.id] ?? 'unrouted'} />
+                    <div className="flex items-center gap-1">
+                      <IntentStatusChip status={mockIntentTopology[intent.id] ?? 'unrouted'} />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-6 text-muted-foreground hover:text-destructive"
+                        aria-label={`Delete intent ${intent.label ?? intent.id}`}
+                        onClick={() => deleteIntent(intent)}
+                      >
+                        <Trash2 aria-hidden className="size-3" />
+                      </Button>
+                    </div>
                   </div>
                   <p className="mt-1.5 font-mono text-[11px] text-muted-foreground">
                     {fromName ?? intent.from.instanceId} · {intent.from.portId}
@@ -85,4 +102,9 @@ export function SchematicPage() {
       </aside>
     </div>
   );
+}
+
+/** Intent deletion is one undoable command (2.2.1); the store owns the cascade rules. */
+function deleteIntent(intent: ConnectionIntent): void {
+  runProjectCommand({ type: 'removeEntity', collection: 'intents', id: intent.id });
 }
