@@ -11,6 +11,11 @@ bun tools/extractor/src/cli.ts <adapter> [args]
 # Adapter A (EXT-01/EXT-01b): game XML recipes -> normalized IR
 bun tools/extractor/src/cli.ts xml <inputDir> --out <outDir>
 
+# Packing (EXT-03): extraction outputs -> validated, versioned pack
+bun tools/extractor/src/cli.ts pack <irDir> --out <pack.json> \
+  --build 0.2.6428.27798 --branch stable [--channel published|user-generated] \
+  [--date 2025-11-10T00:00:00Z] [--validated <promotions.json>]
+
 # Planned (EXT-02 / EXT-05 / SIM-01)
 stationpedia    # Adapter B
 geometry        # Adapter C
@@ -124,6 +129,33 @@ display names (Adapter B, Stationpedia, is their source).
 - `controls` — every non-ingredient `<Recipe>` child, with how it was handled
   (`scalar` | `envelope` | `unmapped` | `unknown`) and its occurrence count.
 - `missingFields`, `diagnostics` (stable codes), `skippedFiles`.
+
+## Packing the outputs (EXT-03)
+
+The `pack` subcommand reads `ir.json`, `coverage.json`, and `manifest.json` from
+an extraction directory and writes one versioned pack (§6.4) through
+`@stationeers/packs`, then validates the written file with the runtime loader.
+
+- **Install facts come from the command line.** `--build` takes the full numeric
+  build (not a marketing version) and `--branch` the game branch; neither is in
+  `Data/` (research digest, 2025-11-09). `--channel` defaults to
+  `user-generated`; a `published` pack is refused on a `beta` branch.
+- **Nothing is validated by default.** Every property is `extracted-unverified`
+  or `missing` unless `--validated <promotions.json>` names it explicitly, with
+  an approver, a timestamp, an evidence reference, and (for quantities) the unit
+the approval establishes. See `packages/packs/README.md`.
+- **Byte-reproducible.** The same IR plus the same metadata writes the same
+  bytes and the same `contentHash`. Pin `--date` to make the artifact
+  reproducible; it defaults to the current time.
+- **Reported, not invented.** Missing values stay absent with a `missing`
+  property entry, joins the XML cannot supply
+  (`material-to-prefab`, `family-to-machine-prefab`, `display-name`) are recorded
+  as `missing` in `coverage.joins`, and IR entity types with no pack
+  representation are counted in `coverage.unpacked`.
+
+`version.ts` holds the `EXTRACTOR_VERSION` and `NORMALIZATION_VERSION` recorded in
+every pack manifest; bump the latter whenever `normalize.ts` changes the IR it
+produces.
 
 ## Limitations
 

@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@stationeers/domain": "workspace:*",
+    "@stationeers/packs": "workspace:*",
     "fast-xml-parser": "^5.7.0",
     "zod": "^4.6.6"
   }
