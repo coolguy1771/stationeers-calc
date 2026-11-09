@@ -36,6 +36,20 @@ Confirmed structure:
 - `blueprints.xml` (750 KB): `<Blueprint Id="BlueprintItem...">` with `<Mesh Path=...>` and `<Edge x1 y1 z1 x2 y2 z2>` line segments in meters — real 3D geometry per prefab. Bounding boxes derivable from edges; footprint/grid-snapping rules still live in code (EXT-05 runtime probe still needed for connector placement), but build-shape data is extractable.
 - XML comments exist in files; parser must ignore them. Numbers appear without leading zero (`".5"`).
 
+## Calibration against the real Data (2025-11-09, EXT-01b)
+
+The extractor now parses the real format end-to-end: **621 recipes across 16 families**, matching an independent ElementTree parse exactly (2312 ingredients, 562 Time, 512 Energy, 20 Temperature/Pressure envelopes, 115 RecipeTier, 5 Output). Byte-identical reruns; zero unknown control elements on real files.
+
+Format facts confirmed by calibration:
+
+- One file may declare several recipe families (`DynamicObjectsFabricator.xml` carries both HydraulicPipeBender and ElectronicsPrinter wrappers).
+- `PrefabName` alone is not unique (50 collisions across families) — recipe identity is `family/prefabId`; distinct recipes for one output inside a family are real alternates (10 cases).
+- `<RecipeTier>` is a real control element; `<RequiredMix>` appears once and remains unmapped.
+- `ReagentGrinderRecipes` uses `<ProcessingData>` records, not `<RecipeData>` (4 records) — known gap, reported not invented.
+- `recycling.xml`'s records are entirely inside an XML comment in the reference install.
+- No display names and no material→prefab or family→machine bindings exist in XML — those joins need Adapter B (Stationpedia).
+- Build number/channel are not in `Data/`; pack manifests (EXT-03) must take them as install-supplied provenance.
+
 ## Earlier assessment (pre-inventory): XML data format: mostly unconfirmed
 
 Only `<Spawn>` world/tutorial spawning structure is community-documented ([StationeersXMLStructureConverter](https://github.com/Geneticus/StationeersXMLStructureConverter)). Filenames, root elements, and schemas for recipes/items/gas definitions in `StreamingAssets/Data` and `Worlds` are **unconfirmed**; some data may be compiled-side only.
