@@ -1,0 +1,10 @@
+<!-- SYNTHETIC fixture — provisional format, not game data -->
+<recipes>
+  <recipe id="R_NO_DISPLAY_NAME">
+    <input itemId="X" quantity="1" unit="g"/>
+    <output itemId="Y" quantity="2" unit="kg"/>
+  </recipe>
+</recipes>
+<items>
+  <item id="I_NO_DISPLAY_NAME" category="Metals"/>
+</items>

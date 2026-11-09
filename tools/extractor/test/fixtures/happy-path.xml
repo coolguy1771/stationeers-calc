@@ -1,0 +1,19 @@
+<!-- SYNTHETIC fixture — provisional format, not game data -->
+<recipes>
+  <recipe id="R_STEEL" displayName="Steel">
+    <input itemId="Iron" quantity="10" unit="g"/>
+    <input itemId="Nickel" quantity="5" unit="g"/>
+    <output itemId="Steel" quantity="1" unit="kg"/>
+  </recipe>
+  <recipe id="R_GLASS" displayName="Glass" station="GlassForge">
+    <input itemId="Sand" quantity="100" unit="g"/>
+    <output itemId="Glass" quantity="0.5" unit="kg"/>
+  </recipe>
+</recipes>
+<items>
+  <item id="Iron" displayName="Iron Ore" category="Metals"/>
+  <item id="Nickel" displayName="Nickel Ore" category="Metals"/>
+  <item id="Steel" displayName="Steel" category="Metals"/>
+  <item id="Sand" displayName="Sand" category="Natural"/>
+  <item id="Glass" displayName="Glass" category="Natural"/>
+</items>

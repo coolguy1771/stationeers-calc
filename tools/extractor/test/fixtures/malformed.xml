@@ -1,0 +1,5 @@
+<!-- SYNTHETIC fixture — provisional format, not game data -->
+<recipes>
+  <recipe id="R_UNCLOSED displayName="Broken">
+    <input itemId="X" quantity="1" unit="g"/>
+</recipes>
