@@ -3,11 +3,12 @@ import 'fake-indexeddb/auto';
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from '../App';
 import { definitionById } from '../mocks';
-import { stopPersistence } from '../state/persistence';
+import { listProjects, openProjectStore } from '@stationeers/persistence';
+import { getPersistenceSnapshot, stopPersistence } from '../state/persistence';
 import { projectStore } from '../state/projectStore';
 import { useUiStore } from '../state/uiStore';
 
@@ -194,5 +195,23 @@ describe('workspace — canonical store integration', () => {
     expect(document.querySelector('[data-model-status="verified"]')).toBeInTheDocument();
     expect(document.querySelector('[data-topology-status="conceptual"]')).toBeInTheDocument();
     expect(screen.queryByText('Exact')).not.toBeInTheDocument();
+  });
+
+  it('writes the seeded project to IndexedDB after the autosave debounce', async () => {
+    renderAt(`/project/${PROJECT_ID}/schematic`);
+    const localStore = openProjectStore();
+
+    // Real autosave against the real Dexie store (fake-indexeddb above): the
+    // workspace effect started persistence, and the debounce writes the project.
+    await vi.waitFor(
+      async () => {
+        const records = await listProjects(localStore);
+        expect(records.map((record) => record.id)).toContain(PROJECT_ID);
+      },
+      { timeout: 3000 },
+    );
+
+    expect(getPersistenceSnapshot().status).toBe('saved');
+    expect(screen.getByText(/^Saved$/)).toBeInTheDocument();
   });
 });
