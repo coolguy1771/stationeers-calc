@@ -1,0 +1,12 @@
+{
+  "name": "@stationeers/extractor",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "stationeers-extract": "./src/cli.ts"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  }
+}

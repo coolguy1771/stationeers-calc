@@ -1,0 +1,26 @@
+{
+  "name": "stationeers-engineer",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "bun": ">=1.2"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tools/*"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd apps/web dev",
+    "build": "bun run --cwd apps/web build",
+    "preview": "bun run --cwd apps/web preview",
+    "test": "bunx --bun vitest run",
+    "test:watch": "bunx --bun vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}
