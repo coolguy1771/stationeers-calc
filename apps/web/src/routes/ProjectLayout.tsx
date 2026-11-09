@@ -1,6 +1,7 @@
-import { ArrowLeft, Download, Fingerprint } from 'lucide-react';
+import { ArrowLeft, Fingerprint, Upload } from 'lucide-react';
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useParams } from 'react-router-dom';
+import { ExportBundleButton } from '../components/ExportBundleButton';
 import { SaveStatusIndicator } from '../components/SaveStatusIndicator';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { UndoRedoControls } from '../components/UndoRedoControls';
@@ -117,13 +118,19 @@ export function ProjectLayout() {
         <SaveStatusIndicator />
         <UndoRedoControls />
         <Separator orientation="vertical" className="h-6" />
+        <ExportBundleButton />
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          onClick={() => stubbedAction('Export versioned project bundle (spec 7.1, 9.1)', 'FND-03')}
+          onClick={() =>
+            stubbedAction(
+              'Import a project bundle (spec 9.1: envelope, hash check, schema validation, migration)',
+              '7.1 project management',
+            )
+          }
         >
-          <Download aria-hidden />
-          Export
+          <Upload aria-hidden />
+          Import
         </Button>
         <ThemeToggle />
       </header>
