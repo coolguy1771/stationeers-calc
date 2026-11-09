@@ -23,7 +23,12 @@ No evidence that footprints, world-space connector positions, orientation frames
 
 ## XML data format: CONFIRMED against a real install (2025-11-09)
 
-Update superseding the section below: a clean copy of `rocketstation_Data/StreamingAssets/Data` (43 XML files, 1.6 MB) is now available in the repo working tree at `Data/` (gitignored, never committed). Confirmed structure:
+Update superseding the section below: a copy of `rocketstation_Data/StreamingAssets/Data` (43 XML files, 1.6 MB) is now available in the repo working tree at `Data/` (gitignored, never committed). **Provenance warning: the source install is MODDED (per user, 2025-11-09).** Consequences:
+
+- This copy is a **format reference only** — file/element/attribute structure is valid to build the parser against, but no VALUE from it may enter a published pack (spec 6.3: extraction only from clean vanilla installs; R18: modded installs contaminate vanilla packs).
+- Pack generation needs a clean vanilla source: a mod-free install (Steam: disable/uninstall mods and verify integrity, or a separate install) — flagged as a human prerequisite for M0 exit.
+
+Confirmed structure:
 
 - Every file: root `<GameData>` (with `xsi`/`xsd` namespaces), one recipe family per file — `ChemistryRecipes`, `AdvancedFurnaceRecipes`, `ElectronicsPrinterRecipes`, `AutolatheRecipes`-style wrappers.
 - Recipe unit of record: `<RecipeData>` → `<PrefabName>` (output prefab ID, e.g. `ItemAstroloyIngot`), `<Recipe>` with ingredient child elements (`<Steel>.5`, `<Copper>.25`) plus `<Time>`, `<Energy>`, and optional `<Temperature>`/`<Pressure>` envelopes (`Start`/`Stop`), and optional `<Output>` quantity.
