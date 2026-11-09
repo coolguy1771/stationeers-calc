@@ -16,7 +16,7 @@ Source of truth: spec §16.1 (24 items, 167 SP). Status values: `done`, `in-prog
 | EXT-05 | 8 | Spike: footprints, connectors, orientations, grid sizes, pipe volumes | EXT-02 | blocked — needs a game install (human) |
 | DOM-01 | 8 | Typed ports, dual-grid placement, physical topology resolution | FND-02, EXT-05 | planned (blocked by EXT-05 go/no-go) |
 | DOM-02 | 8 | Shared-volume network grouping, network volume, diagnostics | DOM-01 | planned |
-| SIM-00 | 5 | Behavior-model registry, validity envelopes, status propagation | FND-02 | planned (wave 2) |
+| SIM-00 | 5 | Behavior-model registry, validity envelopes, status propagation | FND-02 | done — versioned registry, inclusive envelopes with per-input diagnostics, weakest-wins propagation, schema-valid result assembly |
 | SIM-01 | 8 | Reference fixture format and capture workflow | FND-02 | planned (wave 2); actual capture needs the game |
 | SIM-02 | 8 | Verified atmospheric static calculations (§13 #11) | DOM-02, SIM-00, SIM-01, FND-05 | planned |
 | SIM-03 | 5 | Results, model/topology status, diagnostics UI | SIM-02, UI-01 | planned |
@@ -49,3 +49,4 @@ First development increment (§17): Pipe Network Designer vertical slice — pla
 - 2025-11-09: FND-05 merged — deterministic numerics backed by decimal.js (isolated 50-digit clone; bit-exact on 88 reference fixtures), hand-rolled f32/f64 helpers + ordered summation, revision-aware job runner with Zod-v4-validated worker protocol. Decision: library-grade transcendentals over hand-ported fdlibm (transcription risk); fast paths deferred until profiling demands them (spec 2.1).
 - 2025-11-09: toolchain upgraded (TS7, vitest 5, oxlint — user's local changes adopted as fd49ccf; vite-env.d.ts added for TS7). UI foundation started early per user request: shell, routing, shadcn design system, and the spec's status-vocabulary components built against the frozen entity contract with mock data.
 - 2025-11-09: FND-02 + FND-03 merged — Zod-v4 schemas mirror the entity contract (drift-pinned by contract tests), project bundle per §9.1 with strict parsing and future-version rejection, Dexie store with autosave + persistent-storage request, deterministic migration registry, import/export with SHA-256 envelope and mid-stream 32 MiB decompression cap.
+- 2025-11-09: SIM-00 merged — behavior-model registry (immutable Map, duplicate rejection), inclusive-bounds envelope checks with per-input §8 diagnostics, weakest-wins status propagation, `assembleCalculationResult` defaulting topology to conceptual, `findModelsAffectedBy` invalidation hook for EXT-04. 157 tests / 14 files green.

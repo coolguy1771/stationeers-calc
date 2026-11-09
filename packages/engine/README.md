@@ -164,6 +164,56 @@ the worker and settles pending jobs as cancelled. The core semantics
 inline runner via `core.ts` and fully testable without Workers — the
 adapter tests drive the same code through an in-memory postMessage pair.
 
+## Behavior models (`src/models/`)
+
+Versioned registry, validity envelopes, and model-status propagation
+(SIM-00). Spec sections of record: 5.2, 5.2.1, 5.2.2, 5.3, 6.6.
+
+### Registry (`registry.ts`)
+
+Immutable Map-based value (`registerModel` returns a new registry; untrusted
+pack ids can't collide with `Object.prototype` keys). Keyed by `id` +
+`version`; duplicate registration throws `ModelRegistryError`
+(`duplicate-model`). Queries return `undefined`/`[]`, never throw. Registry
+shape is trusted — validate models with `BehaviorModelSchema` at the pack
+boundary (9.4).
+
+### Validity envelopes (`envelope.ts`)
+
+`checkEnvelope(model, inputs)` — bounds are **inclusive** (a fixture captured
+exactly at a declared bound is inside the fixture-covered range); open ends
+are unconstrained. Out-of-envelope yields one spec-8 diagnostic per
+offending input (`SIM-OUT-OF-ENVELOPE`, severity `warning` — the calculation
+runs but loses its Verified claim); a missing/non-numeric declared input is
+severity `error`. `effectiveStatus(model, check)` applies the downgrade
+exactly there.
+
+### Status propagation (`status.ts`)
+
+`propagateStatus(contributions)` — weakest wins: incompatible < unsupported
+< unverified < verified. Empty contributions → `'unsupported'` (spec 8: an
+unsupported result is never a pass). Topology status (buildable/conceptual)
+joins later in DOM-02; the seam is documented in `propagateStatus` and
+`assembleCalculationResult`.
+
+### Result assembly (`result.ts`)
+
+`assembleCalculationResult(...)` builds a `CalculationResult` skeleton
+(contributing models, propagated model status, `computedWith` metadata) that
+validates against `CalculationResultSchema`. `topologyStatus` is a caller
+input defaulting to the conservative `'conceptual'` — a result assembled
+before topology resolution exists can never claim exactness (exact =
+Verified **and** Buildable). Bump `BEHAVIOR_ENGINE_VERSION` whenever model
+semantics or numerics discipline change — it is part of the 5.5
+reproducibility identity stamped into every result.
+
+### EXT-04 invalidation hook (6.6)
+
+`findModelsAffectedBy(registry, { properties, constants })` returns exactly
+the models whose declared `consumes` intersects the semantic pack diff's
+changed set — the set to mark Unverified in 6.6 step 6. Properties and
+constants match as separate namespaces.
+
 ## Validation
 
 `bun run typecheck && bun run test` from the repo root. Spec 5.5's
