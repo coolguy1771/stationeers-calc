@@ -5,7 +5,10 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from './App';
-import { mockCalculationResult, mockProjects } from './mocks';
+import { mockCalculationResult } from './mocks';
+import { projectStore } from './state/projectStore';
+
+const PROJECT = projectStore.state.meta;
 
 afterEach(cleanup);
 
@@ -18,24 +21,23 @@ function renderAt(path: string) {
 }
 
 describe('app shell — routes resolve (UI-01)', () => {
-  it('renders the projects list at / with mock project cards', () => {
+  it('renders the projects list at / from the canonical store', () => {
     renderAt('/');
     expect(screen.getByRole('heading', { level: 1, name: /stationeers engineer/i })).toBeInTheDocument();
-    for (const project of mockProjects) {
-      expect(screen.getAllByText(project.name).length).toBeGreaterThan(0);
-    }
+    // The row is the seeded canonical project, not a separate copy of the mock set.
+    expect(screen.getAllByText(PROJECT.name).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /new project/i })).toBeInTheDocument();
   });
 
   it('opens a project workspace with top bar, tabs, and schematic placeholder', async () => {
     const user = userEvent.setup();
     renderAt('/');
-    await user.click(screen.getAllByText(mockProjects[0]!.name)[0]!);
+    await user.click(screen.getAllByText(PROJECT.name)[0]!);
 
     // Workspace shell: project name in the top bar…
-    expect(screen.getByText(mockProjects[0]!.name)).toBeInTheDocument();
+    expect(screen.getByText(PROJECT.name)).toBeInTheDocument();
     // …pinned pack + hash…
-    expect(screen.getAllByText(new RegExp(mockProjects[0]!.packId)).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(new RegExp(PROJECT.packId)).length).toBeGreaterThan(0);
     // …all four tabs…
     for (const label of ['Schematic', 'Physical Layout', 'Catalog', 'Analysis']) {
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);

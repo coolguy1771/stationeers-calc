@@ -1,4 +1,4 @@
-import type { DeviceInstance, EntityId } from '@stationeers/domain';
+import type { DeviceInstance } from '@stationeers/domain';
 
 /**
  * MOCK device instances (3.3) matching the mock definitions. One instance is
@@ -46,14 +46,7 @@ export const mockDeviceInstances: DeviceInstance[] = [
   },
 ];
 
-const instancesById = new Map<EntityId, DeviceInstance>(
-  mockDeviceInstances.map((instance) => [instance.id, instance]),
-);
-
-export function instanceById(id: EntityId): DeviceInstance | undefined {
-  return instancesById.get(id);
-}
-
+/** Count of instances that claim a placement (the rest stay schematic-only, SYNC-001). */
 export function placedInstanceCount(instances: readonly DeviceInstance[]): number {
   return instances.filter((instance) => instance.placementId !== undefined).length;
 }

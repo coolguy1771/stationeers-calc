@@ -2,16 +2,21 @@
  * MOCK data module (UI-01).
  *
  * Everything here is explicitly mock: `mock.`-prefixed ids, fake hashes, fake
- * build numbers. It exists so the UI foundation can be reviewed before
- * FND-04 (canonical store), FND-03 (persistence), and EXT-03 (packs) land.
- * Wave-2 replaces these exports with selectors over the canonical store —
- * see the seam comment in `src/state/uiStore.ts` (spec 2.2, FND-04).
+ * build numbers. Two things still come from here:
+ *
+ * - `demoProject` — the seeded canonical project. It is loaded into the FND-04
+ *   store once at startup (`src/state/projectStore.ts`); views must read the
+ *   PROJECT from the store, never from this module.
+ * - catalog definitions, the mock calculation result and the mock diagnostics,
+ *   which stand in for EXT-03 packs and SIM-02/SIM-03 engine output. Remaining
+ *   mock entities are assembled into `demoProject` and reached through the store.
+ *
  * Shapes come from the frozen domain contract (`@stationeers/domain`); no
  * parallel entity types are defined here.
  */
-export { mockProjects } from './projects';
-export { definitionById, mockCatalog, mockDeviceDefinitions, type PropertyRow } from './definitions';
-export { instanceById, mockDeviceInstances, placedInstanceCount } from './instances';
-export { mockIntentTopology, mockIntents } from './intents';
+export { demoProject } from './demoProject';
+export { definitionById, mockCatalog, type PropertyRow } from './definitions';
+export { placedInstanceCount } from './instances';
+export { mockIntentTopology } from './intents';
 export { mockCalculationResult } from './analysis';
 export { mockDiagnostics } from './diagnostics';

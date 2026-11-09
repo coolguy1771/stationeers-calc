@@ -1,10 +1,12 @@
 import { BrickWall, Cable, Eraser, MousePointer2, Plus, RotateCw, Spline } from 'lucide-react';
+import { DeviceInstanceList } from '../../components/DeviceInstanceList';
 import { Placeholder } from '../../components/Placeholder';
 import { Button } from '../../components/ui/button';
 import { Separator } from '../../components/ui/separator';
 import { cn } from '../../lib/utils';
 import { stubbedAction } from '../../lib/stubs';
-import { mockDeviceInstances, mockIntents, placedInstanceCount } from '../../mocks';
+import { placedInstanceCount } from '../../mocks';
+import { useProject } from '../../state/projectStore';
 
 const TOOLS = [
   { id: 'select', label: 'Select', icon: MousePointer2, owner: 'UI-03' },
@@ -20,11 +22,13 @@ const TOOLS = [
  * Physical layout tab (spec 3.2). PixiJS canvas is a mount point only; the
  * tool palette and level selector are skeletons. Physical layout is
  * authoritative for buildable connectivity (3.5) — routing updates resolved
- * networks and intent status (SYNC-005/006).
+ * networks and intent status (SYNC-005/006). Instances and placements come
+ * from the canonical store (spec 2.2.1).
  */
 export function PhysicalPage() {
-  const placed = placedInstanceCount(mockDeviceInstances);
-  const unplaced = mockDeviceInstances.length - placed;
+  const project = useProject();
+  const placed = placedInstanceCount(project.devices);
+  const unplaced = project.devices.length - placed;
 
   return (
     <div className="flex h-full min-h-0 gap-3">
@@ -113,21 +117,12 @@ export function PhysicalPage() {
       <aside className="hidden w-72 shrink-0 flex-col gap-3 xl:flex">
         <section aria-label="Devices on this level" className="rounded-md border border-border bg-card p-2.5">
           <h3 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">Devices</h3>
-          <ul className="mt-1.5 flex flex-col gap-1">
-            {mockDeviceInstances.map((instance) => {
-              const isPlaced = instance.placementId !== undefined;
-              return (
-                <li key={instance.id} className="flex items-center justify-between gap-2 text-xs">
-                  <span className="truncate">{instance.definitionId.replace('mock.', '')}</span>
-                  <span className={cn('font-mono text-[10px]', isPlaced ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-300')}>
-                    {isPlaced ? 'placed' : 'unplaced'}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="mt-1.5">
+            <DeviceInstanceList instances={project.devices} />
+          </div>
           <p className="mt-2 text-[10px] text-muted-foreground/70">
-            {mockIntents.length} intent awaiting a route (SYNC-007).
+            {project.intents.length} intent awaiting a route (SYNC-007) · the same selection as the
+            schematic (SYNC-004).
           </p>
         </section>
       </aside>

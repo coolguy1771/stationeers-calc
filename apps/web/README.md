@@ -10,10 +10,12 @@ Backlog: `docs/plan/BACKLOG.md`.
 src/
   components/ui/        shadcn/ui primitives (manually vendored, shadcn convention)
   components/status/    status vocabulary — the spec-critical part, see below
-  components/           shared: Placeholder, ThemeToggle, SaveStatusIndicator, DiagnosticsPanel
+  components/           shared: Placeholder, ThemeToggle, SaveStatusIndicator, DiagnosticsPanel,
+                        UndoRedoControls, ExportBundleButton, ResultRevisionTag,
+                        DeviceInstanceChip/List
   routes/               pages: ProjectsPage, ProjectLayout (+ tab pages), DesignPage, NotFoundPage
-  mocks/                explicitly-mock data typed from @stationeers/domain (replaced by FND-04 selectors)
-  state/                transient UI state ONLY (see seam below)
+  mocks/                the seeded demo Project + explicitly-mock catalog/result/diagnostics data
+  state/                canonical store adapter, persistence, selection, transient UI state
   lib/                  cn, shortHash, formatRelativeTime, stubbedAction (TODO toasts)
 ```
 
@@ -51,15 +53,57 @@ derivation is never serialized, 9.1).
   for values/IDs/hashes; `tabular` utility for aligning numeric columns.
 - One cyan accent; green/amber/red are reserved for status semantics.
 
-## The FND-04 seam (wave 2: read this first)
+## Canonical store, persistence and selection (read this first)
 
-`src/state/uiStore.ts` is **transient UI state only** (spec 2.1: selection,
-active tab, save-status placeholder). The canonical project model never enters
-Zustand — it lives in the canonical store with a command/patch log and revision
-IDs (spec 2.2.1, backlog FND-04). When FND-04 lands, replace the `src/mocks/`
-exports with selectors over that store; the components above them should not
-need changes. `SaveStatusIndicator` already consumes the placeholder machine
-(`saved | dirty | saving | error`) that FND-03 will drive.
+The project model lives in ONE canonical store (spec 2.2, 2.2.1; backlog
+FND-04, landed in `packages/domain/src/store/`). React Flow, PixiJS and Zustand
+never hold project data; they are projections.
+
+- `state/projectStore.ts` — the store adapter. `projectStore` is the singleton
+  `Store`; `useProjectSnapshot()` gives `{ project, revision, revisionId,
+  canUndo, canRedo }` (re-renders per committed revision),
+  `useProject()` gives the document, and mutations go through
+  `dispatchProjectCommand(command)` (returns a `StoreResult`),
+  `runProjectCommand(command)` (same, but toasts the stable `StoreError`),
+  `undoProject()` / `redoProject()`. State is seeded from
+  `mocks/demoProject.ts`.
+- `state/persistence.ts` — autosave. `startPersistence()` (called once by the
+  workspace shell) subscribes to revisions, writes debounced snapshots of the
+  project through `@stationeers/persistence`, and reports
+  `dirty | saving | saved | error` via `usePersistence()`; the first save
+  requests persistent storage (2.1) and surfaces the answer. The union is
+  `SaveStatus`, which `SaveStatusIndicator` renders.
+- `state/undoRedo.ts` — `useUndoRedo()` (cursor → disabled states) and
+  `useUndoRedoShortcuts()` (Ctrl/Cmd+Z, Shift+Ctrl/Cmd+Z; text fields keep
+  their own undo). The shell's `UndoRedoControls` uses the same actions.
+- `state/selection.ts` — the shared selection (SYNC-004): transient, so it lives
+  in Zustand (`uiStore.selection`) behind `useSelection()` / `useSelect()` /
+  `isSelected()`. `DeviceInstanceChip` is the one selectable device affordance;
+  `DeviceInstanceList` is the shared instance list for both editors.
+- `state/analysis.ts` — `useTaggedMockResult()` tags the mocked
+  `CalculationResult` with the revision it was computed on and asks the store's
+  `isStale()` whether the project has moved past it (5.6).
+  `components/ResultRevisionTag` renders the tag or the stale notice.
+- `state/exportProject.ts` — `buildProjectExport()` / `exportCurrentProject()`:
+  the SHA-256 transfer envelope from `@stationeers/persistence` (9.4), built
+  from `projectStore.state`.
+- `state/uiStore.ts` — **transient UI state only** (2.1: active project, active
+  tab, selection). Nothing project-shaped may be added to it.
+
+### Known gaps (owned outside this app)
+
+- The store has no command to touch `meta.updatedAt` (it never reads a clock,
+  5.1.1). Persistence stamps the timestamp on the bundle it writes; exports
+  carry whatever timestamp the store last loaded.
+- `createAutosave().schedule(bundle)` needs the serialized bundle up front, so
+  every commit pays a full `serializeProject` (schema validation) even when the
+  debounce coalesces writes. A `schedule(() => bundle)` variant would move that
+  cost to write time.
+- `createAutosave` reports `saving` as soon as a write is *queued*, and has no
+  "pending" state, so `state/persistence.ts` overrides that synchronous event
+  to keep `dirty` honest during the debounce window.
+- One project per session: listing, creating, renaming and deleting persisted
+  projects (7.1) is not wired yet, and the import affordance is still a stub.
 
 ## Notes for the next person
 
@@ -69,6 +113,11 @@ need changes. `SaveStatusIndicator` already consumes the placeholder machine
   carry no alias — anything a test imports transitively would fail to resolve.
   Using `@/` here requires adding the alias to those root configs first.
 - Tests run under the root vitest config (`environment: node`); component tests
-  opt into jsdom with the per-file pragma `// @vitest-environment jsdom`.
-- Stubbed affordances (create/rename/archive/delete, export, editor tools, run
-  analysis) raise `stubbedAction(...)` toasts naming the owning backlog item.
+  opt into jsdom with the per-file pragma `// @vitest-environment jsdom`. Tests
+  that let autosave write for real import `fake-indexeddb/auto` first
+  (`routes/projectWorkspace.test.tsx`); `state/persistence.test.ts` injects a
+  Dexie-shaped fake instead.
+- Stubbed affordances (create/rename/archive/delete projects, import, editor
+  tools, run analysis) raise `stubbedAction(...)` toasts naming the owning
+  backlog item. Export, undo/redo, save status, selection and intent deletion
+  are real.

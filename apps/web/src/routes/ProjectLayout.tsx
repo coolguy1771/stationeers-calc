@@ -1,23 +1,30 @@
-import { ArrowLeft, Download, Fingerprint } from 'lucide-react';
+import { ArrowLeft, Fingerprint, Upload } from 'lucide-react';
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useParams } from 'react-router-dom';
+import { ExportBundleButton } from '../components/ExportBundleButton';
 import { SaveStatusIndicator } from '../components/SaveStatusIndicator';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { UndoRedoControls } from '../components/UndoRedoControls';
 import { Button } from '../components/ui/button';
 import { Separator } from '../components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
 import { cn, shortHash } from '../lib/utils';
 import { stubbedAction } from '../lib/stubs';
-import { mockProjects } from '../mocks';
+import { startPersistence } from '../state/persistence';
+import { useProjectSnapshot } from '../state/projectStore';
+import { useUndoRedoShortcuts } from '../state/undoRedo';
 import { useUiStore } from '../state/uiStore';
 import { WORKSPACE_TABS } from './workspaceTabs';
 
 /**
- * Project workspace shell (spec 3): top bar with project identity, pinned
- * pack + hash, save status, export; tab navigation over the four workspaces.
- * Project DATA itself is not stored here — the shell reads only mock metadata
- * and mirrors the route into the transient UI store. The canonical model
- * arrives with FND-04 (see src/state/uiStore.ts).
+ * Project workspace shell (spec 3): top bar with project identity, pinned pack +
+ * hash, canonical store revision, save status, export; tab navigation over the
+ * four workspaces.
+ *
+ * The shell holds no project data itself: identity comes from the canonical
+ * store's `meta` (spec 2.2.1) and the route is mirrored into the transient UI
+ * store. One project is seeded per session; listing and switching persisted
+ * projects belongs to project management (7.1).
  */
 export function ProjectLayout() {
   const { projectId } = useParams();
@@ -33,18 +40,29 @@ export function ProjectLayout() {
   }, [projectId, setActiveProject]);
 
   useEffect(() => {
+    // Autosave begins with the workspace: the seeded project gets its first
+    // write, then every committed revision is scheduled (2.2.1).
+    startPersistence();
+  }, []);
+
+  useEffect(() => {
     setActiveTab(activeTab);
     return () => setActiveTab(null);
   }, [activeTab, setActiveTab]);
 
-  const project = mockProjects.find((candidate) => candidate.id === projectId);
+  const { project: snapshotProject, revision } = useProjectSnapshot();
+  const project = snapshotProject.meta.id === projectId ? snapshotProject.meta : undefined;
+
+  useUndoRedoShortcuts();
 
   if (!project) {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-3 p-10 text-center">
         <p className="font-mono text-sm">unknown project id</p>
         <p className="text-sm text-muted-foreground">
-          No project with id <span className="font-mono">{projectId}</span> exists in the mock set.
+          No project with id <span className="font-mono">{projectId}</span> is loaded in the
+          canonical store. One demo project is seeded per session; persisted projects arrive with
+          project management (spec 7.1).
         </p>
         <Button asChild variant="outline">
           <Link to="/">
@@ -83,15 +101,36 @@ export function ProjectLayout() {
           </div>
         </div>
         <Separator orientation="vertical" className="ms-auto h-6" />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              className="cursor-default font-mono text-[11px] text-muted-foreground"
+              data-store-revision={revision}
+            >
+              rev {revision}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            Canonical store revision (spec 2.2.1): every committed command, undo and redo
+            increments it.
+          </TooltipContent>
+        </Tooltip>
         <SaveStatusIndicator />
+        <UndoRedoControls />
         <Separator orientation="vertical" className="h-6" />
+        <ExportBundleButton />
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          onClick={() => stubbedAction('Export versioned project bundle (spec 7.1, 9.1)', 'FND-03')}
+          onClick={() =>
+            stubbedAction(
+              'Import a project bundle (spec 9.1: envelope, hash check, schema validation, migration)',
+              '7.1 project management',
+            )
+          }
         >
-          <Download aria-hidden />
-          Export
+          <Upload aria-hidden />
+          Import
         </Button>
         <ThemeToggle />
       </header>

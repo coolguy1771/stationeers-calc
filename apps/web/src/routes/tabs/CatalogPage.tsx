@@ -1,13 +1,15 @@
 import { Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import type { DataQuality, DeviceDefinition } from '@stationeers/domain';
+import type { DataQuality, DeviceDefinition, DeviceInstance } from '@stationeers/domain';
+import { DeviceInstanceChip } from '../../components/DeviceInstanceChip';
 import { DataQualityBadge } from '../../components/status/DataQualityBadge';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { cn } from '../../lib/utils';
 import { stubbedAction } from '../../lib/stubs';
-import { mockCatalog, mockDeviceInstances, type PropertyRow } from '../../mocks';
+import { mockCatalog, type PropertyRow } from '../../mocks';
+import { useProject } from '../../state/projectStore';
 
 const MEDIUM_LABEL: Record<string, string> = {
   'gas-pipe': 'gas',
@@ -22,10 +24,13 @@ const MEDIUM_LABEL: Record<string, string> = {
 /**
  * Component catalog (spec 7.2): search/filter layout over device definitions.
  * Every displayed property row carries its 6.5 data-quality badge (13 #3:
- * provenance and quality on every displayed property). Uses mock catalog data
- * until packs (EXT-03) are loaded at runtime (6.7).
+ * provenance and quality on every displayed property). Definitions stay mock
+ * until packs (EXT-03) are loaded at runtime (6.7); the instances listed per
+ * definition are the canonical project's, and selecting one sets the shared
+ * selection (SYNC-004).
  */
 export function CatalogPage() {
+  const project = useProject();
   const [query, setQuery] = useState('');
   const categories = useMemo(
     () => [...new Set(mockCatalog.map((entry) => entry.definition.category))].sort(),
@@ -84,7 +89,14 @@ export function CatalogPage() {
 
       <div className="grid min-h-0 flex-1 content-start gap-3 overflow-y-auto pb-2 sm:grid-cols-2 xl:grid-cols-3">
         {visible.map(({ definition, propertyRows }) => (
-          <DefinitionCard key={definition.id} definition={definition} propertyRows={propertyRows} />
+          <DefinitionCard
+            key={definition.id}
+            definition={definition}
+            propertyRows={propertyRows}
+            instances={project.devices.filter(
+              (instance) => instance.definitionId === definition.id,
+            )}
+          />
         ))}
         {visible.length === 0 ? (
           <p className="col-span-full rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
@@ -96,10 +108,15 @@ export function CatalogPage() {
   );
 }
 
-function DefinitionCard({ definition, propertyRows }: { definition: DeviceDefinition; propertyRows: PropertyRow[] }) {
-  const instancesInProject = mockDeviceInstances.filter(
-    (instance) => instance.definitionId === definition.id,
-  ).length;
+function DefinitionCard({
+  definition,
+  propertyRows,
+  instances,
+}: {
+  definition: DeviceDefinition;
+  propertyRows: PropertyRow[];
+  instances: readonly DeviceInstance[];
+}) {
   return (
     <Card>
       <CardHeader className="gap-1.5">
@@ -137,7 +154,22 @@ function DefinitionCard({ definition, propertyRows }: { definition: DeviceDefini
         </div>
       </CardContent>
       <CardFooter className="mt-auto items-center justify-between gap-2">
-        <span className="text-[11px] text-muted-foreground">{instancesInProject} in mock project</span>
+        {instances.length === 0 ? (
+          <span className="text-[11px] text-muted-foreground">none in project</span>
+        ) : (
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="text-[11px] text-muted-foreground">in project:</span>
+            {instances.map((instance) => (
+              <DeviceInstanceChip
+                key={instance.id}
+                instanceId={instance.id}
+                // The card is already titled with the definition name; the chip
+                // names the instance so duplicates stay distinguishable.
+                label={instance.id.replace('mock.inst.', '')}
+              />
+            ))}
+          </div>
+        )}
         <Button
           size="sm"
           variant="outline"
