@@ -1,0 +1,15 @@
+# Dependabot version updates are disabled in favor of Renovate (renovate.json).
+# open-pull-requests-limit: 0 stops all version-update PRs, overriding any
+# account-level auto-enable defaults.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
