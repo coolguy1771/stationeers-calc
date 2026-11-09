@@ -21,7 +21,17 @@ Runtime caveats: text/spec data works headless on the dedicated server; icons ne
 
 No evidence that footprints, world-space connector positions, orientation frames, pipe internal volumes, or snap transforms are exposed by Stationpedia. They live in prefabs/compiled code. Adapter C must use runtime inspection + controlled placement fixtures (spec 6.1), and report `unknown` rather than approximating. This is the core EXT-05 go/no-go question.
 
-## XML data format: mostly unconfirmed
+## XML data format: CONFIRMED against a real install (2025-11-09)
+
+Update superseding the section below: a clean copy of `rocketstation_Data/StreamingAssets/Data` (43 XML files, 1.6 MB) is now available in the repo working tree at `Data/` (gitignored, never committed). Confirmed structure:
+
+- Every file: root `<GameData>` (with `xsi`/`xsd` namespaces), one recipe family per file — `ChemistryRecipes`, `AdvancedFurnaceRecipes`, `ElectronicsPrinterRecipes`, `AutolatheRecipes`-style wrappers.
+- Recipe unit of record: `<RecipeData>` → `<PrefabName>` (output prefab ID, e.g. `ItemAstroloyIngot`), `<Recipe>` with ingredient child elements (`<Steel>.5`, `<Copper>.25`) plus `<Time>`, `<Energy>`, and optional `<Temperature>`/`<Pressure>` envelopes (`Start`/`Stop`), and optional `<Output>` quantity.
+- Ingredient quantities are element-name→number; unit semantics (mass vs count vs mol) are unverified — record as `extracted-unverified` until cross-checked.
+- `blueprints.xml` (750 KB): `<Blueprint Id="BlueprintItem...">` with `<Mesh Path=...>` and `<Edge x1 y1 z1 x2 y2 z2>` line segments in meters — real 3D geometry per prefab. Bounding boxes derivable from edges; footprint/grid-snapping rules still live in code (EXT-05 runtime probe still needed for connector placement), but build-shape data is extractable.
+- XML comments exist in files; parser must ignore them. Numbers appear without leading zero (`".5"`).
+
+## Earlier assessment (pre-inventory): XML data format: mostly unconfirmed
 
 Only `<Spawn>` world/tutorial spawning structure is community-documented ([StationeersXMLStructureConverter](https://github.com/Geneticus/StationeersXMLStructureConverter)). Filenames, root elements, and schemas for recipes/items/gas definitions in `StreamingAssets/Data` and `Worlds` are **unconfirmed**; some data may be compiled-side only.
 

@@ -45,3 +45,4 @@ First development increment (§17): Pipe Network Designer vertical slice — pla
 
 - 2025-11-09: FND-01 scaffold committed; wave 1 dispatched (FND-02 + FND-03, FND-05, EXT-01, EXT-02 license/format research).
 - 2025-11-09: research landed — both community extractors are unlicensed; decision: independent Adapter B extractor, repos used as references only. Geometry confirmed absent from Stationpedia → EXT-05 runtime probe is the real M0 gate. See research-2025-11-09-extraction.md.
+- 2025-11-09: real Data XML obtained (43 files, gitignored) and inventoried — recipe format confirmed; blueprints.xml carries per-prefab 3D edge geometry. EXT-01 reconciliation task queued against the real format.

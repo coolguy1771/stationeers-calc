@@ -1,3 +1,6 @@
+# Copied game data (spec 6.8: never commit or redistribute game assets)
+/Data/
+
 node_modules/
 dist/
 coverage/
