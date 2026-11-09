@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import type { ConnectionIntent, DeviceInstance, EntityId } from '@stationeers/domain';
 import { definitionById, mockDiagnostics, mockIntentTopology } from '../../mocks';
+import { DeviceInstanceList } from '../../components/DeviceInstanceList';
 import { DiagnosticsPanel } from '../../components/DiagnosticsPanel';
 import { IntentStatusChip } from '../../components/status/IntentStatusChip';
 import { Placeholder } from '../../components/Placeholder';
@@ -49,6 +50,20 @@ export function SchematicPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-xs tracking-wider text-muted-foreground uppercase">
+              Devices
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <DeviceInstanceList instances={project.devices} />
+            <p className="text-[11px] text-muted-foreground">
+              Selecting an instance here selects it in the physical layout too (SYNC-004).
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xs tracking-wider text-muted-foreground uppercase">
               Connection intents
             </CardTitle>
           </CardHeader>
@@ -92,8 +107,8 @@ export function SchematicPage() {
               );
             })}
             <p className="text-[11px] text-muted-foreground">
-              {project.devices.length} device instances in the project · selecting syncs across
-              both editors (SYNC-004).
+              {project.intents.length} intent(s) · canonical stored entities, deletable as one undoable
+              command (2.2.1).
             </p>
           </CardContent>
         </Card>
