@@ -20,7 +20,7 @@ Source of truth: spec §16.1 (24 items, 167 SP). Status values: `done`, `in-prog
 | SIM-01 | 8 | Reference fixture format and capture workflow | FND-02 | planned (wave 2); actual capture needs the game |
 | SIM-02 | 8 | Verified atmospheric static calculations (§13 #11) | DOM-02, SIM-00, SIM-01, FND-05 | planned |
 | SIM-03 | 5 | Results, model/topology status, diagnostics UI | SIM-02, UI-01 | planned |
-| UI-01 | 5 | Application shell, component library, inspector | FND-02, EXT-03 | planned |
+| UI-01 | 5 | Application shell, component library, inspector | FND-02, EXT-03 | in-progress (early start per user: shell + design system + status vocabulary against mock data; wiring deferred until FND-02/EXT-03 land) |
 | UI-02 | 8 | Schematic editor with typed connections and intents | DOM-01, UI-01, FND-04 | planned |
 | UI-03 | 13 | Multi-level 2D dual-grid placement and orientation | DOM-01, EXT-05, FND-04 | planned |
 | UI-04 | 13 | Pipe routing, connector snapping, collision checks | UI-03 | planned |
@@ -47,3 +47,4 @@ First development increment (§17): Pipe Network Designer vertical slice — pla
 - 2025-11-09: research landed — both community extractors are unlicensed; decision: independent Adapter B extractor, repos used as references only. Geometry confirmed absent from Stationpedia → EXT-05 runtime probe is the real M0 gate. See research-2025-11-09-extraction.md.
 - 2025-11-09: real Data XML obtained (43 files, gitignored) and inventoried — recipe format confirmed; blueprints.xml carries per-prefab 3D edge geometry. **Source install is modded → copy is format-reference only; clean vanilla source needed for pack generation (M0 prerequisite).**
 - 2025-11-09: FND-05 merged — deterministic numerics backed by decimal.js (isolated 50-digit clone; bit-exact on 88 reference fixtures), hand-rolled f32/f64 helpers + ordered summation, revision-aware job runner with Zod-v4-validated worker protocol. Decision: library-grade transcendentals over hand-ported fdlibm (transcription risk); fast paths deferred until profiling demands them (spec 2.1).
+- 2025-11-09: toolchain upgraded (TS7, vitest 5, oxlint — user's local changes adopted as fd49ccf; vite-env.d.ts added for TS7). UI foundation started early per user request: shell, routing, shadcn design system, and the spec's status-vocabulary components built against the frozen entity contract with mock data.
