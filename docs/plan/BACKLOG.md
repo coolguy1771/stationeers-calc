@@ -7,9 +7,9 @@ Source of truth: spec §16.1 (24 items, 167 SP). Status values: `done`, `in-prog
 | FND-01 | 3 | Bun/Vite monorepo, TS strict, Vitest, CI | — | done (scaffold) |
 | FND-02 | 8 | Canonical project/device/port/intent/connection schemas | FND-01 | done — Zod v4 schemas mirroring the entity contract, bundle schema per §9.1 |
 | FND-03 | 5 | Local storage, persistence request, migration, import/export with §9.4 limits | FND-02 | done — Dexie store, migrations, gzip transfer with mid-stream bomb cap |
-| FND-04 | 5 | Canonical store, command/patch log, revision IDs | FND-02 | planned (wave 2) |
+| FND-04 | 5 | Canonical store, command/patch log, revision IDs | FND-02 | done — command/patch+inverse store, monotonic revisions, fast-check-verified undo/redo round-trip |
 | FND-05 | 5 | Deterministic numeric library + revision-aware worker job infra | FND-01 | done — decimal.js-backed transcendentals, f32/f64 helpers, revision-aware jobs |
-| EXT-01 | 5 | XML configuration and recipe extractor (Adapter A) | FND-01 | in-progress (wave 1) |
+| EXT-01 | 5 | XML configuration and recipe extractor (Adapter A) | FND-01 | done against PROVISIONAL format — IR, normalizer, coverage + hashed manifest, byte-reproducible; real-format reconciliation queued (confirmed format in research digest) |
 | EXT-02 | 8 | Runtime Stationpedia extractor (license review + fallback plan) | FND-01 | decision made: independent extractor (see research-2025-11-09-extraction.md); human EULA review still owed before publishing packs (6.8) |
 | EXT-03 | 8 | Normalize data, versioned pack manifests | EXT-01, EXT-02 | planned |
 | EXT-04 | 5 | Semantic pack diff, provenance coverage, input invalidation | EXT-03, SIM-00 | planned |
