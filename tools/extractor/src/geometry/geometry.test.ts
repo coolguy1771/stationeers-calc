@@ -13,17 +13,19 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { canonicalJson } from '../canonical';
 import {
+  buildCoverage,
   buildWorksheet,
   emptySlot,
-  MAX_OBSERVATIONS_FILE_BYTES,
   GeometryImportError,
   importObservations,
+  MAX_OBSERVATIONS_FILE_BYTES,
   normalizeObservations,
   ObservationDocumentSchema,
   parseObservationDocument,
   QUESTIONS,
   seedFromPrefabIds,
   worksheetJson,
+  type GeometryCoverage,
   type ObservationDocument,
 } from '.';
 
@@ -498,18 +500,14 @@ describe('row-order independence', () => {
     };
     const first = normalizeObservations(observations);
     const second = normalizeObservations(reversed);
-    expect(canonicalJson(second.document.definitions)).toBe(
-      canonicalJson(first.document.definitions),
-    );
-    expect(canonicalJson(second.document.elements)).toBe(
-      canonicalJson(first.document.elements),
-    );
-    const withoutDigest = (coverage: typeof first.coverage) => ({
+    expect(canonicalJson(second.definitions)).toBe(canonicalJson(first.definitions));
+    expect(canonicalJson(second.elements)).toBe(canonicalJson(first.elements));
+    const withoutDigest = (coverage: GeometryCoverage) => ({
       ...coverage,
       generatedFrom: null,
     });
-    expect(canonicalJson(withoutDigest(second.coverage))).toBe(
-      canonicalJson(withoutDigest(first.coverage)),
+    expect(canonicalJson(withoutDigest(buildCoverage(second)))).toBe(
+      canonicalJson(withoutDigest(buildCoverage(first))),
     );
   });
 });

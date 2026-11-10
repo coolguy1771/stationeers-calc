@@ -16,4 +16,6 @@ export * from './observations';
 export * from './records';
 export * from './protocol';
 export * from './worksheet';
+export * from './normalize';
+export * from './coverage';
 export * from './import';
