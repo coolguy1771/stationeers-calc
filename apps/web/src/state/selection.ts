@@ -1,6 +1,8 @@
 import type { EntityId } from '@stationeers/domain';
 import { useUiStore, type SelectionRef } from './uiStore';
 
+export type { SelectionRef };
+
 /**
  * Shared selection helpers (SYNC-004, spec 2.1, 3.4).
  *

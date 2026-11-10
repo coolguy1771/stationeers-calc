@@ -17,6 +17,5 @@
 export { demoProject } from './demoProject';
 export { definitionById, mockCatalog, type PropertyRow } from './definitions';
 export { placedInstanceCount } from './instances';
-export { mockIntentTopology } from './intents';
 export { mockCalculationResult } from './analysis';
 export { mockDiagnostics } from './diagnostics';

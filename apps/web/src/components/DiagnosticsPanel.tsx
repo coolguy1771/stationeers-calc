@@ -27,8 +27,13 @@ export function DiagnosticsPanel({
         <p className="text-xs text-muted-foreground">No diagnostics.</p>
       ) : (
         <ul className="flex min-h-0 flex-col gap-2 overflow-y-auto">
-          {diagnostics.map((diagnostic) => (
-            <li key={diagnostic.code} className="rounded-md border border-border bg-card p-2.5">
+          {diagnostics.map((diagnostic, index) => (
+            // One code can now occur per affected entity (one CONN-UNROUTED per
+            // intent), so the list position disambiguates the key.
+            <li
+              key={`${diagnostic.code}:${diagnostic.entityIds.join(',')}:${index}`}
+              className="rounded-md border border-border bg-card p-2.5"
+            >
               <div className="flex items-center gap-2">
                 <SeverityBadge severity={diagnostic.severity} />
                 <span className="font-mono text-xs text-foreground/90">{diagnostic.code}</span>

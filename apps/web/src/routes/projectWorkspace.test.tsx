@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import '../test/flowEnvironment';
 import 'fake-indexeddb/auto';
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, render, screen, within } from '@testing-library/react';
