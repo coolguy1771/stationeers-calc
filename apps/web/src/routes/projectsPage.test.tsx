@@ -213,4 +213,24 @@ describe('projects page — real project management (7.1)', () => {
     expect(await screen.findByText(demoProject.meta.name, { exact: false })).toBeInTheDocument();
     expect(getProjectLibrarySnapshot().projects.map((item) => item.id)).toContain('project.elsewhere');
   });
+
+  it('opens the settings page (storage durability, install state) from the header', async () => {
+    const user = userEvent.setup();
+    renderAt('/');
+    await cardFor(DEMO_ID);
+
+    await user.click(screen.getByRole('link', { name: 'Settings' }));
+
+    // Storage durability (2.1) and the offline shell (11) are one page away
+    // from the project list — jsdom has no Storage API, which the panel says
+    // explicitly instead of showing a fabricated zero.
+    expect(
+      await screen.findByRole('heading', { name: 'Settings' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByTestId('storage-panel')).toBeInTheDocument();
+    expect(screen.getByText('Offline app shell')).toBeInTheDocument();
+    expect(screen.getByTestId('storage-usage')).toHaveTextContent(
+      'unavailable of unavailable',
+    );
+  });
 });

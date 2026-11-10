@@ -18,7 +18,9 @@
   },
   "include": [
     "apps/*/src/**/*",
-    "apps/*/vite.config.ts",
+    "apps/*/*.config.ts",
+    "apps/*/e2e/**/*",
+    "apps/*/scripts/**/*",
     "packages/*/src/**/*",
     "tools/*/src/**/*"
   ]

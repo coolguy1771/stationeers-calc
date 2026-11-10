@@ -105,6 +105,43 @@ never hold project data; they are projections.
 - One project per session: listing, creating, renaming and deleting persisted
   projects (7.1) is not wired yet, and the import affordance is still a stub.
 
+## Offline, installability and performance (QA-02)
+
+Installable PWA + offline app shell + storage durability panel + a performance
+harness. Full write-up (what is cached and why, the update flow, per-browser
+eviction behaviour, and the measured baseline): `docs/plan/offline-and-performance.md`.
+
+- `src/sw.ts` — hand-written service worker, bundled and precache-injected by
+  `vite-plugin-pwa` (`injectManifest`, `minify: false` so workbox can find
+  `self.__WB_MANIFEST`). The policy it applies is pure code in
+  `src/pwa/swPolicy.ts` (navigation fallback, API-ish cache guard, versioned
+  cache cleanup, `Vary` stripping) and is unit-tested there and end-to-end in
+  `src/sw.test.ts`.
+- `src/pwa/registration.ts` + `src/pwa/serviceWorkerClient.ts` — registration and
+  the update prompt state machine. A new build is offered as a banner
+  ("Reload"), never swapped in silently; `vite dev` registers nothing.
+- `public/manifest.webmanifest`, `public/icons/` — installable identity.
+  Icons/manifest colours are derived from the `index.css` design tokens by
+  `scripts/generate-icons.ts` (`bun run icons`); the PNGs are committed so a
+  build needs no image tooling.
+- `/settings` — storage panel (persistent-storage grant + request,
+  `estimate()` usage/quota with 75 %/90 % warnings, app version, installed
+  state, Safari eviction guidance, export action). Reached from the projects
+  page header gear.
+- `/perf` — diagnostic benchmark harness (200 instances, 199 intents), not
+  linked in the UI and shipped on purpose: production numbers are the ones that
+  matter. `scripts/perf-baseline.ts` drives it.
+
+```bash
+bun run --cwd apps/web offline:smoke   # build → serve → SW → offline reload → assert shell
+bun run --cwd apps/web e2e             # same check via Playwright (chromium only)
+bun run --cwd apps/web perf:baseline   # production-build perf numbers
+bun run --cwd apps/web icons           # regenerate committed icons
+```
+
+The browser checks print `SKIPPED` and exit 0 when Playwright's Chromium is not
+installed (`bunx playwright install chromium`). Multibrowser coverage is QA-01's.
+
 ## Notes for the next person
 
 - All source files import relatively on purpose. The `@/*` alias is configured
