@@ -6,6 +6,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark light" />
+    <!-- Installable PWA identity (spec 11, backlog QA-02). The manifest is a
+         committed file (public/manifest.webmanifest); the theme colour is the
+         --background design token, so the installed window matches the shell. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0d1012" />
+    <link rel="icon" type="image/svg+xml" href="/icons/mark.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Stationeers" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Stationeers Engineer</title>
   </head>
   <body>

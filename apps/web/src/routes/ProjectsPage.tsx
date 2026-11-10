@@ -7,6 +7,7 @@ import {
   Pencil,
   Pin,
   Plus,
+  Settings,
   Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -111,6 +112,18 @@ export function ProjectsPage() {
             <Plus aria-hidden />
             New project
           </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button asChild variant="ghost" size="icon" aria-label="Settings">
+                <Link to="/settings">
+                  <Settings aria-hidden />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Storage durability, install state, and the offline shell (spec 2.1, 11)
+            </TooltipContent>
+          </Tooltip>
           <ThemeToggle />
         </div>
       </header>

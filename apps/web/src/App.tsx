@@ -1,10 +1,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { ServiceWorkerUpdatePrompt } from './components/ServiceWorkerUpdatePrompt';
 import { Toaster } from './components/ui/sonner';
 import { TooltipProvider } from './components/ui/tooltip';
 import { ProjectLayout } from './routes/ProjectLayout';
 import { ProjectsPage } from './routes/ProjectsPage';
 import { DesignPage } from './routes/DesignPage';
 import { NotFoundPage } from './routes/NotFoundPage';
+import { PerfPage } from './routes/PerfPage';
+import { SettingsPage } from './routes/SettingsPage';
 import { AnalysisPage } from './routes/tabs/AnalysisPage';
 import { CatalogPage } from './routes/tabs/CatalogPage';
 import { PhysicalPage } from './routes/tabs/PhysicalPage';
@@ -28,6 +31,9 @@ export function AppRoutes() {
           <Route path="analysis" element={<AnalysisPage />} />
         </Route>
         <Route path="/design" element={<DesignPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        {/* Diagnostic route (spec 11 benchmark harness); not linked in the UI. */}
+        <Route path="/perf" element={<PerfPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </TooltipProvider>
@@ -38,6 +44,7 @@ export function AppRoutes() {
 export default function App() {
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
+      <ServiceWorkerUpdatePrompt />
       <AppRoutes />
       <Toaster />
     </div>
