@@ -1,5 +1,8 @@
 import { BadgeCheck, CircleSlash, DraftingCompass, FlaskConical, Hammer, Info, OctagonAlert, TriangleAlert } from 'lucide-react';
 import type { DataQuality, ModelStatus, Severity, TopologyStatus } from '@stationeers/domain';
+import type { IntentTopologyStatus } from '../../lib/statusVocabulary';
+
+export type { IntentTopologyStatus };
 
 /*
  * Status vocabulary styling — spec-critical (3.5, 5.2, 6.5, 8).
@@ -178,18 +181,9 @@ export const VERDICT_TONE_CLASS: Record<ResultVerdict['tone'], string> = {
 };
 
 /**
- * Intent topology status (spec 3.5) — DERIVED display vocabulary for a
- * ConnectionIntent, never stored (9.1). Deliberately outline-styled and kept
- * separate from the result TopologyStatus (buildable/conceptual): different
- * question, different words, different shapes.
+ * Intent topology status (spec 3.5) — outline-styled chips for the derived
+ * vocabulary in `lib/statusVocabulary.ts`, never stored (9.1).
  */
-export type IntentTopologyStatus =
-  | 'unrouted'
-  | 'routed'
-  | 'routed-with-warnings'
-  | 'conflicting'
-  | 'not-buildable';
-
 export const INTENT_STATUS_CONFIG: Record<IntentTopologyStatus, StatusConfig> = {
   unrouted: {
     label: 'Unrouted',

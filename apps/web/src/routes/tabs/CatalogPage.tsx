@@ -6,20 +6,11 @@ import { DataQualityBadge } from '../../components/status/DataQualityBadge';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
+import { MEDIUM_LABEL } from '../../lib/mediums';
 import { cn } from '../../lib/utils';
 import { stubbedAction } from '../../lib/stubs';
 import { mockCatalog, type PropertyRow } from '../../mocks';
 import { useProject } from '../../state/projectStore';
-
-const MEDIUM_LABEL: Record<string, string> = {
-  'gas-pipe': 'gas',
-  'liquid-pipe': 'liquid',
-  electrical: 'power',
-  data: 'data',
-  chute: 'chute',
-  room: 'room',
-  thermal: 'thermal',
-};
 
 /**
  * Component catalog (spec 7.2): search/filter layout over device definitions.

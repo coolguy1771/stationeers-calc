@@ -1,12 +1,7 @@
 import type { DeviceInstance } from '@stationeers/domain';
-import { definitionById } from '../mocks';
 import { cn } from '../lib/utils';
+import { instanceLabel } from '../state/deviceCatalog';
 import { DeviceInstanceChip } from './DeviceInstanceChip';
-
-/** Display name of an instance's definition, falling back to its id. */
-export function instanceLabel(instance: DeviceInstance): string {
-  return definitionById(instance.definitionId)?.displayName ?? instance.definitionId;
-}
 
 /**
  * Device instances of the canonical project, selectable (SYNC-004). The

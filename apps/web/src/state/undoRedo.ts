@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import type { StoreResult } from '@stationeers/domain';
+import { isEditableTarget } from '../lib/dom';
 import { projectStore, redoProject, undoProject, useProjectSnapshot } from './projectStore';
 
 /**
@@ -37,13 +38,6 @@ export function redoLastCommand(): void {
 export function useUndoRedo(): UndoRedoState {
   const { canUndo, canRedo } = useProjectSnapshot();
   return { canUndo, canRedo, undo: undoLastCommand, redo: redoLastCommand };
-}
-
-/** Text inputs keep their own undo stack; a keystroke there is not a project command. */
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  if (target.isContentEditable) return true;
-  return target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
 }
 
 /**

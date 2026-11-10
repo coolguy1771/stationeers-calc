@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import './test/flowEnvironment';
 import '@testing-library/jest-dom/vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -29,7 +30,7 @@ describe('app shell — routes resolve (UI-01)', () => {
     expect(screen.getByRole('button', { name: /new project/i })).toBeInTheDocument();
   });
 
-  it('opens a project workspace with top bar, tabs, and schematic placeholder', async () => {
+  it('opens a project workspace with top bar, tabs, and the schematic editor', async () => {
     const user = userEvent.setup();
     renderAt('/');
     await user.click(screen.getAllByText(PROJECT.name)[0]!);
@@ -42,8 +43,8 @@ describe('app shell — routes resolve (UI-01)', () => {
     for (const label of ['Schematic', 'Physical Layout', 'Catalog', 'Analysis']) {
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);
     }
-    // …and the schematic mount-point placeholder.
-    expect(screen.getByText(/React Flow mounts here/i)).toBeInTheDocument();
+    // …and the schematic editor itself (UI-02): canvas + intents inspector.
+    expect(screen.getByRole('region', { name: 'Schematic canvas' })).toBeInTheDocument();
     expect(screen.getByText(/Connection intents/i)).toBeInTheDocument();
   });
 
@@ -55,7 +56,7 @@ describe('app shell — routes resolve (UI-01)', () => {
 
   it('redirects /project/:id to the schematic tab', () => {
     renderAt('/project/mock.project.atmos');
-    expect(screen.getByText(/React Flow mounts here/i)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Schematic canvas' })).toBeInTheDocument();
   });
 
   it('renders the analysis tab with the dual-status result (Verified + Conceptual, never exact)', () => {
