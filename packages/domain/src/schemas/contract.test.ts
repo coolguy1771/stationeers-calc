@@ -3,7 +3,6 @@
  * The two must not drift (spec 4.1, 9.1).
  */
 import { describe, expectTypeOf, it } from 'vitest';
-import { z } from './zod';
 import type { Z } from './zod';
 import type {
   BehaviorModel,

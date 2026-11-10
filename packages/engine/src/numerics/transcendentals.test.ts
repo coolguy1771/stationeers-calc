@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { f64FromWords, f64Words, ulpDistance } from './bits';
+import { f64Words, ulpDistance } from './bits';
 import { exp, log, log2, pow, sqrt } from './transcendentals';
 
 /**

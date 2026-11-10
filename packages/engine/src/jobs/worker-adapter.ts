@@ -108,8 +108,6 @@ const workerToMainSchema = z.discriminatedUnion('kind', [
 
 /** Type of a validated main→worker message. */
 type MainToWorker = z.infer<typeof mainToWorkerSchema>;
-/** Type of a validated worker→main message. */
-type WorkerToMain = z.infer<typeof workerToMainSchema>;
 
 function parseMessage<Schema extends z.ZodType>(schema: Schema, data: unknown): z.output<Schema> {
   const result = schema.safeParse(data);
@@ -203,7 +201,9 @@ export function createWorkerAdapter(
     },
 
     cancelAll(): void {
-      for (const cancel of [...active.values()]) cancel();
+      // Snapshot: cancel() deletes from `active`, so iterating the live map
+      // would risk skipping entries.
+      for (const cancel of Array.from(active.values())) cancel();
     },
 
     get activeCount(): number {
@@ -213,7 +213,7 @@ export function createWorkerAdapter(
     dispose(): void {
       if (disposed) return;
       disposed = true;
-      for (const cancel of [...active.values()]) cancel();
+      for (const cancel of Array.from(active.values())) cancel();
       for (const entry of pending.values()) entry.reject(new JobCancelledError('worker disposed'));
       pending.clear();
       worker.terminate();

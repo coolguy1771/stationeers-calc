@@ -101,11 +101,6 @@ function doubleToExactDecimal(x: number): Decimal {
   return Dec(negative ? `-${literal}` : literal);
 }
 
-/** True when `x` is a nonzero finite double (edge cases are handled by callers). */
-function isFiniteNonzero(x: number): boolean {
-  return Number.isFinite(x) && x !== 0;
-}
-
 /** True when `y` is an odd integer value (all |y| ≥ 2^53 doubles are even). */
 function isOddInteger(y: number): boolean {
   return Number.isInteger(y) && Math.abs(y) % 2 === 1;

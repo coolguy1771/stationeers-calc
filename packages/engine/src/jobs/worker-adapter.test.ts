@@ -28,7 +28,7 @@ function createWorkerPair(jobs: Record<string, WorkerJobFunction>): WorkerLike {
     postMessage(message) {
       if (terminated) return; // a terminated worker swallows messages
       queueMicrotask(() => {
-        for (const listener of [...workerListeners]) listener({ data: message });
+        for (const listener of workerListeners.slice()) listener({ data: message });
       });
     },
     addEventListener(_type, listener) {
@@ -42,7 +42,7 @@ function createWorkerPair(jobs: Record<string, WorkerJobFunction>): WorkerLike {
   const workerSide: WorkerSideLike = {
     postMessage(message) {
       queueMicrotask(() => {
-        for (const listener of [...mainListeners]) listener({ data: message });
+        for (const listener of mainListeners.slice()) listener({ data: message });
       });
     },
     addEventListener(_type, listener) {
@@ -207,7 +207,7 @@ describe('worker adapter — failure and validation', () => {
     // A listener that receives garbage (not produced by serveWorkerJobs)
     // must fail loudly instead of mis-routing by jobId.
     let listener: ((event: { data: unknown }) => void) | undefined;
-    const adapter = createWorkerAdapter(
+    const _adapter = createWorkerAdapter(
       () => ({
         postMessage: () => undefined,
         addEventListener: (_type, l) => {

@@ -78,7 +78,9 @@ export function createJobRunner(options: JobRunnerOptions): JobRunner {
     },
 
     cancelAll(): void {
-      for (const cancel of [...active.values()]) cancel();
+      // Snapshot: cancel() deletes from `active`, so iterating the live map
+      // would risk skipping entries.
+      for (const cancel of Array.from(active.values())) cancel();
     },
 
     get activeCount(): number {

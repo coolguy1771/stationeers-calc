@@ -200,7 +200,7 @@ function commandFor({ project, step, stepIndex }: StepContext): Command | undefi
             type: 'replaceEntity',
             collection,
             id,
-            entity: makeDevice(id, [...device.ports.map((port) => port.id)]) as DeviceInstance,
+            entity: makeDevice(id, device.ports.map((port) => port.id)) as DeviceInstance,
           };
         }
         case 'placements':
@@ -388,7 +388,7 @@ describe('store property: undo/redo round trip', () => {
       // pre-command state. Structural equality is the contract; byte-identity
       // is checked on the redo replay (the patch engine is copy-on-write).
       let current = JSON.parse(initialJson);
-      log.entries.forEach((entry, index) => {
+      log.entries.forEach((entry) => {
         const before = current;
         const after = applyPatch(before, entry.ops);
         // The inverse patch must restore exactly the pre-command state.
