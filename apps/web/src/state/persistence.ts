@@ -9,16 +9,25 @@ import {
   type SaveStatus as AutosaveStatus,
 } from '@stationeers/persistence';
 import { toast } from 'sonner';
-import { projectStore } from './projectStore';
+import { projectStore, projectStoreGeneration } from './projectStore';
 
 /**
  * Autosave ↔ UI adapter (spec 2.2.1, 2.1, 7.1; backlog FND-03 + FND-04 wiring).
  *
- * Every committed revision is written to IndexedDB as a debounced snapshot of
- * the canonical project (`@stationeers/persistence`), and the shell renders the
- * real outcome: `dirty` while a revision awaits its write, `saving` while the
- * write runs, `saved` once it is on disk, `error` when it is not. Nothing here
- * is a placeholder machine.
+ * Every committed revision of the OPEN project is written to IndexedDB as a
+ * debounced snapshot of the canonical project (`@stationeers/persistence`), and
+ * the shell renders the real outcome: `dirty` while a revision awaits its
+ * write, `saving` while the write runs, `saved` once it is on disk, `error`
+ * when it is not. Nothing here is a placeholder machine.
+ *
+ * Two invariants keep the states honest now that several projects exist (7.1):
+ *
+ * 1. Autosave follows the open project. A store swap (`swapProjectInStore`) is
+ *    adopted as "this project is on disk as of `meta.updatedAt`" — the project
+ *    library persists a project before opening it, so starting a session must
+ *    not rewrite it just because it is open.
+ * 2. Switching never drops work: `flushAutosave()` awaits the pending write
+ *    and reports its outcome before the caller swaps (`loadProjectIntoStore`).
  *
  * Durability (2.1): the first save requests persistent storage and surfaces the
  * granted/denied result.
@@ -33,6 +42,10 @@ export type PersistentStorageState = 'unknown' | 'granted' | 'denied';
 export interface PersistenceSnapshot {
   readonly status: SaveStatus;
   readonly persistentStorage: PersistentStorageState;
+  /** Project the save state belongs to — the open project (7.1); `null` before autosave starts. */
+  readonly projectId: string | null;
+  /** ISO time of the last successful write of the open project; `null` when unknown. */
+  readonly lastSavedAt: string | null;
 }
 
 /** Default autosave debounce, in milliseconds. */
@@ -52,7 +65,9 @@ export interface PersistenceOptions {
 let started = false;
 let status: SaveStatus = 'dirty';
 let persistentStorage: PersistentStorageState = 'unknown';
-let snapshot: PersistenceSnapshot = { status, persistentStorage };
+let activeProjectId: string | null = null;
+let lastSavedAt: string | null = null;
+let snapshot: PersistenceSnapshot = buildSnapshot();
 const listeners = new Set<() => void>();
 
 let autosave: AutosaveHandle | undefined;
@@ -67,9 +82,17 @@ let writingRevision = 0;
 let writtenRevision = 0;
 /** Set while `schedule()` emits its synchronous `saving` (queued, not running). */
 let queueing = false;
+/** Store generation the current bookkeeping belongs to (see `adoptOpenProject`). */
+let adoptedGeneration = 0;
+/** True while the open project has no stored record to write to (see `suspendAutosave`). */
+let suspended = false;
+
+function buildSnapshot(): PersistenceSnapshot {
+  return { status, persistentStorage, projectId: activeProjectId, lastSavedAt };
+}
 
 function notify(): void {
-  snapshot = { status, persistentStorage };
+  snapshot = buildSnapshot();
   for (const listener of listeners) listener();
 }
 
@@ -98,7 +121,7 @@ function stampedBundle(): ProjectBundle {
 
 function scheduleSave(revision: number): void {
   const handle = autosave;
-  if (handle === undefined) return;
+  if (handle === undefined || suspended) return;
   requestedRevision = revision;
   queueing = true;
   try {
@@ -112,6 +135,40 @@ function scheduleSave(revision: number): void {
   setStatus('dirty');
 }
 
+/**
+ * Store notification. A swap (new generation) is not an edit: autosave adopts
+ * the newly opened project instead of writing the old one under the new id.
+ */
+function onStoreChange(): void {
+  if (projectStoreGeneration() !== adoptedGeneration) {
+    adoptOpenProject();
+    return;
+  }
+  if (suspended) return;
+  scheduleSave(projectStore.revision);
+}
+
+/**
+ * Takes the open project as the autosave target: its revision stream restarts
+ * at 0 on a swap, so the written/requested bookkeeping resets with it, and the
+ * state is `saved` because the project library persists a project before it is
+ * opened (or before it replaces the open one).
+ *
+ * Deliberately does NOT lift `suspended`: adoption says "this is the project
+ * autosave is about", not "this project has a stored record". `resumeAutosave`
+ * is called by the library when it opens a project that does have one.
+ */
+function adoptOpenProject(): void {
+  adoptedGeneration = projectStoreGeneration();
+  activeProjectId = projectStore.state.meta.id;
+  lastSavedAt = projectStore.state.meta.updatedAt;
+  requestedRevision = projectStore.revision;
+  writingRevision = requestedRevision;
+  writtenRevision = requestedRevision;
+  status = 'saved';
+  notify();
+}
+
 function onAutosaveStatus(next: AutosaveStatus): void {
   if (queueing) return;
   switch (next.state) {
@@ -122,6 +179,8 @@ function onAutosaveStatus(next: AutosaveStatus): void {
       break;
     case 'saved':
       writtenRevision = Math.max(writtenRevision, writingRevision);
+      // `at` is the stamp on the bundle that was written: the record's save time.
+      lastSavedAt = next.at;
       setStatus(writtenRevision >= projectStore.revision ? 'saved' : 'dirty');
       void ensurePersistentStorage();
       break;
@@ -165,23 +224,55 @@ async function ensurePersistentStorage(): Promise<void> {
 
 /**
  * Starts autosave for the canonical store. Idempotent: the workspace shell calls
- * it from an effect, and the first call also queues the seeded project's initial
- * write (it has never been persisted).
+ * it from an effect. The open project is adopted as already on disk (the
+ * project library persists a project before it is opened), so only committed
+ * revisions are written.
  */
 export function startPersistence(options: PersistenceOptions = {}): void {
   if (started) return;
   started = true;
   storageRequest = options.requestStorage;
-  requestedRevision = 0;
-  writingRevision = 0;
-  writtenRevision = 0;
   autosave = createAutosave(options.store ?? openProjectStore(), {
     delayMs: options.delayMs ?? SAVE_DEBOUNCE_MS,
   });
   autosave.onStatus(onAutosaveStatus);
-  // Every committed command, undo and redo produces a snapshot to write (2.2.1).
-  unsubscribeStore = projectStore.subscribe(() => scheduleSave(projectStore.revision));
-  scheduleSave(projectStore.revision);
+  // Every committed command, undo and redo produces a snapshot to write (2.2.1);
+  // a swap re-points autosave at the newly opened project instead.
+  unsubscribeStore = projectStore.subscribe(onStoreChange);
+  adoptOpenProject();
+}
+
+/**
+ * Waits for the pending write and returns the save status afterwards. Project
+ * switching calls this before swapping the store, so unsaved work is either on
+ * disk or reported as failed — never dropped silently (7.1).
+ *
+ * Returns `saved` when autosave is not running: nothing has been queued, so
+ * there is nothing to lose.
+ */
+export async function flushAutosave(): Promise<SaveStatus> {
+  if (autosave === undefined) return 'saved';
+  await autosave.flush();
+  return status;
+}
+
+/**
+ * Stops writing the open project (7.1 delete): its record no longer exists, so
+ * autosave must not recreate it behind the user's back. The pending write is
+ * cancelled and the save state reverts to `saved` — there is no record left to
+ * be unsaved about. Opening a stored project resumes writing (`resumeAutosave`,
+ * called by `loadProjectIntoStore`).
+ */
+export function suspendAutosave(): void {
+  suspended = true;
+  autosave?.cancel();
+  status = 'saved';
+  notify();
+}
+
+/** Resumes writing the open project after it was suspended (delete, then open). */
+export function resumeAutosave(): void {
+  suspended = false;
 }
 
 /**
@@ -200,10 +291,14 @@ export function stopPersistence(): void {
   storageRequest = undefined;
   status = 'dirty';
   persistentStorage = 'unknown';
-  snapshot = { status, persistentStorage };
+  activeProjectId = null;
+  lastSavedAt = null;
+  snapshot = buildSnapshot();
   requestedRevision = 0;
   writingRevision = 0;
   writtenRevision = 0;
+  adoptedGeneration = projectStoreGeneration();
+  suspended = false;
 }
 
 /** Current save state and storage durability (7.1, 2.1). */

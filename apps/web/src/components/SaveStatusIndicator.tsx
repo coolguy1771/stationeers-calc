@@ -27,12 +27,19 @@ export function SaveStatusIndicator({ status, className }: { status?: SaveStatus
   const effective = status ?? persistence.status;
   const meta = SAVE_STATUS_META[effective];
   const Icon = meta.icon;
+  // The indicator belongs to the OPEN project (7.1) and names its last write;
+  // before autosave has tracked anything there is no time to show.
+  const lastSaved =
+    effective === 'saved' && persistence.lastSavedAt !== null
+      ? ` · last save ${new Date(persistence.lastSavedAt).toLocaleString()}`
+      : '';
   return (
     <span
       className={cn('inline-flex items-center gap-1.5 text-xs', meta.className, className)}
       data-save-status={effective}
       data-persistent-storage={persistence.persistentStorage}
-      title={`Local autosave status (spec 7.1) · ${STORAGE_LABEL[persistence.persistentStorage]}`}
+      data-save-project={persistence.projectId ?? ''}
+      title={`Local autosave status for this project (spec 7.1)${lastSaved} · ${STORAGE_LABEL[persistence.persistentStorage]}`}
     >
       {Icon ? (
         <Icon aria-hidden className={cn('size-3.5', effective === 'saving' && 'animate-spin')} />
