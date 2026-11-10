@@ -13,6 +13,8 @@ import { projectStore } from './projectStore';
  * presentation related is invented here.
  */
 export interface ProjectExportFile {
+  /** Id of the exported project (the envelope's `bundle.meta.id`). */
+  readonly projectId: string;
   /** Suggested download name: project id + short content hash. */
   readonly filename: string;
   /** Pretty-printed transfer envelope (kind, envelopeVersion, contentHash, bundle). */
@@ -25,6 +27,7 @@ export interface ProjectExportFile {
 export async function buildProjectExport(project: Project): Promise<ProjectExportFile> {
   const envelope = await exportProject(project);
   return {
+    projectId: project.meta.id,
     filename: `${project.meta.id}-${shortHash(envelope.contentHash)}.json`,
     // Indentation is cosmetic: the content hash covers the compact bundle JSON,
     // and the import path re-serializes the parsed bundle before hashing it.

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import './test/flowEnvironment';
+import 'fake-indexeddb/auto';
 import '@testing-library/jest-dom/vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -7,11 +8,15 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from './App';
 import { mockCalculationResult } from './mocks';
+import { stopPersistence } from './state/persistence';
 import { projectStore } from './state/projectStore';
 
 const PROJECT = projectStore.state.meta;
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  stopPersistence();
+});
 
 function renderAt(path: string) {
   return render(
@@ -22,18 +27,18 @@ function renderAt(path: string) {
 }
 
 describe('app shell — routes resolve (UI-01)', () => {
-  it('renders the projects list at / from the canonical store', () => {
+  it('renders the projects list at / from the project database (7.1)', async () => {
     renderAt('/');
     expect(screen.getByRole('heading', { level: 1, name: /stationeers engineer/i })).toBeInTheDocument();
-    // The row is the seeded canonical project, not a separate copy of the mock set.
-    expect(screen.getAllByText(PROJECT.name).length).toBeGreaterThan(0);
+    // The list is read from IndexedDB; the first run seeds the demo project once.
+    expect((await screen.findAllByText(PROJECT.name)).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /new project/i })).toBeInTheDocument();
   });
 
   it('opens a project workspace with top bar, tabs, and the schematic editor', async () => {
     const user = userEvent.setup();
     renderAt('/');
-    await user.click(screen.getAllByText(PROJECT.name)[0]!);
+    await user.click((await screen.findAllByText(PROJECT.name))[0]!);
 
     // Workspace shell: project name in the top bar…
     expect(screen.getByText(PROJECT.name)).toBeInTheDocument();
@@ -82,11 +87,12 @@ describe('app shell — routes resolve (UI-01)', () => {
     }
   });
 
-  it('falls back to a not-found page for unknown routes and unknown project ids', () => {
+  it('falls back to a not-found page for unknown routes and unknown project ids', async () => {
     renderAt('/nowhere');
     expect(screen.getByText(/no such route/i)).toBeInTheDocument();
     cleanup();
     renderAt('/project/does-not-exist');
-    expect(screen.getByText(/unknown project id/i)).toBeInTheDocument();
+    // The workspace asks the project database; an id it does not hold is unknown.
+    expect(await screen.findByText(/unknown project id/i)).toBeInTheDocument();
   });
 });

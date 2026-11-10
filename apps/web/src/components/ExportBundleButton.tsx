@@ -3,12 +3,13 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { shortHash } from '../lib/utils';
+import { markProjectExported } from '../state/exportPrompt';
 import { exportCurrentProject } from '../state/exportProject';
 
 /**
  * Exports the canonical project as a portable bundle (spec 7.1, 9.1). The
  * envelope carries a SHA-256 content hash, so the file is verifiable when it is
- * imported again (9.4).
+ * imported again (9.4). A successful export also settles the export nudge (2.1).
  */
 export function ExportBundleButton() {
   const [exporting, setExporting] = useState(false);
@@ -17,6 +18,7 @@ export function ExportBundleButton() {
     setExporting(true);
     try {
       const file = await exportCurrentProject();
+      markProjectExported(file.projectId);
       toast.success('Project bundle exported', {
         description: `${file.filename} · sha256 ${shortHash(file.contentHash, 12)}… (spec 9.1)`,
       });
