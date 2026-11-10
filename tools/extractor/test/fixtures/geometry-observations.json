@@ -1,0 +1,328 @@
+{
+  "kind": "stationeers-geometry-observations",
+  "documentVersion": 1,
+  "session": {
+    "observer": "test-fixture (invented)",
+    "recordedAt": "2025-11-11T00:00:00Z",
+    "evidenceDirectory": "evidence/"
+  },
+  "install": {
+    "gameBuild": "0.2.9000.12345",
+    "buildDisplay": "SYNTHETIC fixture build",
+    "branch": "stable",
+    "vanilla": {
+      "value": true,
+      "confidence": "observed",
+      "method": "fixture: subscription list empty",
+      "basis": null,
+      "evidence": "evidence/vanilla.txt"
+    },
+    "extractorVersion": "0.0.1",
+    "notes": "SYNTHETIC: every value in this file is invented for tests. No value comes from a game install (spec 6.3, 6.8)."
+  },
+  "grid": {
+    "largeCellSizeM": {
+      "value": 1.5,
+      "confidence": "observed",
+      "method": "M1: two coordinate readouts one large cell apart",
+      "basis": "raw readout in evidence/grid.txt",
+      "evidence": "evidence/grid.txt"
+    },
+    "smallCellSizeM": {
+      "value": 0.5,
+      "confidence": "observed",
+      "method": "M1: two coordinate readouts one small cell apart",
+      "basis": "raw readout in evidence/grid.txt",
+      "evidence": "evidence/grid.txt"
+    },
+    "ratio": {
+      "value": 3,
+      "confidence": "observed",
+      "method": "counted small elements across one large frame",
+      "basis": "invented: consistent with the two sizes above",
+      "evidence": "evidence/grid.txt"
+    },
+    "measurementMethod": {
+      "value": "fixture method: coordinate readouts and a cross-count",
+      "confidence": "observed",
+      "method": null,
+      "basis": null,
+      "evidence": null
+    },
+    "evidence": "evidence/grid.txt",
+    "notes": "SYNTHETIC values."
+  },
+  "definitions": [
+    {
+      "prefabId": "ItemFixtureAtmosphericsUnit",
+      "placeable": {
+        "value": true,
+        "confidence": "observed",
+        "method": "placed in the world",
+        "basis": null,
+        "evidence": "evidence/footprint-atmos.txt"
+      },
+      "gridKind": {
+        "value": "large",
+        "confidence": "observed",
+        "method": "it snapped to the large grid",
+        "basis": null,
+        "evidence": null
+      },
+      "footprint": {
+        "cells": {
+          "value": [
+            { "x": 0, "y": 0, "z": 0, "solid": true },
+            { "x": 1, "y": 0, "z": 0, "solid": true }
+          ],
+          "confidence": "observed",
+          "method": "boxed in with walls on every face",
+          "basis": null,
+          "evidence": "evidence/footprint-atmos.txt"
+        },
+        "originNote": {
+          "value": "origin = the cell the placement preview highlighted first",
+          "confidence": "observed",
+          "method": null,
+          "basis": null,
+          "evidence": null
+        }
+      },
+      "orientations": {
+        "allowed": {
+          "value": [
+            { "surface": "floor", "yaw": 1 },
+            { "surface": "floor", "yaw": 0 },
+            { "surface": "floor", "yaw": 1 }
+          ],
+          "confidence": "observed",
+          "method": "tried floor/ceiling/wall at all four yaws",
+          "basis": null,
+          "evidence": null
+        },
+        "refused": {
+          "value": [{ "surface": "ceiling", "yaw": 0 }],
+          "confidence": "observed",
+          "method": "the placement preview refused the ceiling",
+          "basis": null,
+          "evidence": null
+        }
+      },
+      "ports": {
+        "value": [
+          {
+            "id": "gas-in",
+            "medium": "gas-pipe",
+            "localPosition": {
+              "value": { "x": 0, "y": 0, "z": -1 },
+              "confidence": "observed",
+              "method": "attached a pipe segment to the connector",
+              "basis": null,
+              "evidence": null
+            },
+            "direction": {
+              "value": { "x": 0, "y": 0, "z": -1 },
+              "confidence": "observed",
+              "method": "the connector faces outward",
+              "basis": null,
+              "evidence": null
+            },
+            "mediation": {
+              "value": "device",
+              "confidence": "inferred",
+              "method": null,
+              "basis": "the inlet looked like a machine valve, so the join is device-mediated",
+              "evidence": null
+            },
+            "categories": {
+              "value": [],
+              "confidence": "observed",
+              "method": "the build menu listed none",
+              "basis": null,
+              "evidence": null
+            },
+            "capabilities": {
+              "value": [],
+              "confidence": "observed",
+              "method": "the build menu listed none",
+              "basis": null,
+              "evidence": null
+            }
+          },
+          {
+            "id": "power-in",
+            "medium": "electrical",
+            "localPosition": {
+              "value": { "x": 1, "y": 0, "z": 0 },
+              "confidence": "observed",
+              "method": "attached a cable to the connector",
+              "basis": null,
+              "evidence": null
+            },
+            "mediation": {
+              "value": "passive",
+              "confidence": "inferred",
+              "method": null,
+              "basis": "a plain flange, so the join is passive",
+              "evidence": null
+            }
+          }
+        ],
+        "confidence": "observed",
+        "method": "attached one element per connector and recorded the adjacent cell",
+        "basis": null,
+        "evidence": null
+      },
+      "internalVolumeM3": {
+        "value": 20,
+        "confidence": "observed",
+        "method": "fixture: read the displayed volume",
+        "basis": null,
+        "evidence": null
+      },
+      "sealing": {
+        "isSealingStructure": {
+          "value": true,
+          "confidence": "observed",
+          "method": "held a pressure difference",
+          "basis": null,
+          "evidence": null
+        },
+        "behaviour": {
+          "value": "held pressure in the fixture test",
+          "confidence": "observed",
+          "method": null,
+          "basis": null,
+          "evidence": null
+        }
+      },
+      "notes": "SYNTHETIC fixture row."
+    },
+    {
+      "prefabId": "ItemFixtureWall",
+      "placeable": {
+        "value": true,
+        "confidence": "observed",
+        "method": "placed in the world",
+        "basis": null,
+        "evidence": null
+      },
+      "gridKind": {
+        "value": "large",
+        "confidence": "observed",
+        "method": "snapped to the large grid",
+        "basis": null,
+        "evidence": null
+      },
+      "footprint": {
+        "cells": {
+          "value": [{ "x": 0, "y": 0, "z": 0 }],
+          "confidence": "observed",
+          "method": "counted the occupied cell",
+          "basis": null,
+          "evidence": null
+        }
+      },
+      "orientations": {
+        "allowed": {
+          "value": [{ "surface": "wall", "yaw": 0 }],
+          "confidence": "observed",
+          "method": "wall mount only",
+          "basis": null,
+          "evidence": null
+        }
+      },
+      "ports": {
+        "value": [],
+        "confidence": "observed",
+        "method": "attached elements to every face: none accepted",
+        "basis": null,
+        "evidence": null
+      },
+      "sealing": {
+        "isSealingStructure": {
+          "value": true,
+          "confidence": "observed",
+          "method": "held a pressure difference",
+          "basis": null,
+          "evidence": null
+        }
+      },
+      "notes": "SYNTHETIC fixture row: solidity deliberately left untested."
+    },
+    {
+      "prefabId": "ItemFixtureIngot",
+      "placeable": {
+        "value": false,
+        "confidence": "observed",
+        "method": "it is an item; the build never offers a placement preview",
+        "basis": null,
+        "evidence": null
+      }
+    }
+  ],
+  "elements": [
+    {
+      "definitionId": "ItemFixturePipeStraight",
+      "kind": "pipe-segment",
+      "volumeM3": {
+        "value": 0.5,
+        "confidence": "observed",
+        "method": "fixture: the build displayed the volume",
+        "basis": null,
+        "evidence": null
+      },
+      "measurement": {
+        "method": {
+          "value": "read the displayed volume",
+          "confidence": "observed",
+          "method": null,
+          "basis": null,
+          "evidence": null
+        }
+      },
+      "notes": "SYNTHETIC fixture row."
+    },
+    {
+      "definitionId": "ItemFixturePipeBend",
+      "kind": "pipe-bend",
+      "measurement": {
+        "method": {
+          "value": "closed loop with a known charge and a gauge reading",
+          "confidence": "observed",
+          "method": null,
+          "basis": null,
+          "evidence": null
+        },
+        "loop": {
+          "value": "4 straights and 2 bends closed with a valve",
+          "confidence": "observed",
+          "method": null,
+          "basis": null,
+          "evidence": null
+        },
+        "charge": {
+          "value": "10 mol of fixture gas",
+          "confidence": "observed",
+          "method": null,
+          "basis": null,
+          "evidence": null
+        },
+        "readings": {
+          "value": [
+            { "quantity": "pressure run 1", "valueText": "101.3", "unitText": "kPa" },
+            { "quantity": "temperature run 1", "valueText": "293", "unitText": "K" }
+          ],
+          "confidence": "observed",
+          "method": null,
+          "basis": null,
+          "evidence": "evidence/loop-1.txt"
+        }
+      }
+    },
+    {
+      "definitionId": "ItemFixturePipeCross",
+      "notes": "SYNTHETIC fixture row: not classified, not measured."
+    }
+  ]
+}
