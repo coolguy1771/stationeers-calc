@@ -66,10 +66,16 @@ export const WORKSHEET_NOTES = [
 /** Seed element candidates from prefab ids: pipe/cable names only. */
 function seedElementCandidates(prefabIds: string[]): WorksheetSeed['elementCandidates'] {
   const candidates: WorksheetSeed['elementCandidates'] = [];
+  // One row per definitionId: several recipe families can output the same
+  // element (ItemKitPipe comes from two printers), and `geometry import`
+  // refuses two rows describing the same element.
+  const seen = new Set<string>();
   for (const definitionId of prefabIds) {
+    if (seen.has(definitionId)) continue;
     for (const { name, pattern } of ELEMENT_SEED_PATTERNS) {
       if (pattern.test(definitionId)) {
         candidates.push({ definitionId, pattern: name });
+        seen.add(definitionId);
         break;
       }
     }
@@ -138,9 +144,18 @@ function elementRow(
 /** Build the worksheet document from its seed (pure; no I/O). */
 export function buildWorksheet(seed: WorksheetSeed): ObservationDocument {
   const prefabIds = [...new Set(seed.prefabIds)].sort(compareStrings);
-  const candidates = [...seed.elementCandidates].sort((a, b) =>
-    compareStrings(a.definitionId, b.definitionId),
-  );
+  // One row per element definition: `geometry import` refuses two rows
+  // describing the same element, and a seed may legitimately carry the same
+  // prefab from more than one source (several recipe families output
+  // ItemKitPipe). First seed wins; the row's note names the pattern.
+  const seenElements = new Set<string>();
+  const candidates = [...seed.elementCandidates]
+    .sort((a, b) => compareStrings(a.definitionId, b.definitionId))
+    .filter((candidate) => {
+      if (seenElements.has(candidate.definitionId)) return false;
+      seenElements.add(candidate.definitionId);
+      return true;
+    });
 
   return {
     kind: OBSERVATION_DOCUMENT_KIND,

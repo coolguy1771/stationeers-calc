@@ -128,6 +128,23 @@ describe('worksheet generation', () => {
     }
   });
 
+  it('never emits two element rows for one definition (import refuses duplicates)', () => {
+    // Regression: several recipe families output ItemKitPipe, so a real install
+    // seeded it twice — and `geometry import` refuses the worksheet it was
+    // handed. One row per definitionId is the invariant.
+    const duplicated = seedFromPrefabIds(['ItemKitPipe', 'ItemKitPipe', 'ItemFixtureCable']);
+    const worksheet = buildWorksheet({
+      ...duplicated,
+      elementCandidates: [
+        ...duplicated.elementCandidates,
+        { definitionId: 'ItemKitPipe', pattern: 'pipe' },
+      ],
+    });
+    const ids = worksheet.elements.map((row) => row.definitionId);
+    expect(ids).toEqual([...new Set(ids)]);
+    expect(ids).toContain('ItemKitPipe');
+  });
+
   it('leaves every slot empty and carries the protocol question inline', () => {
     const worksheet = buildWorksheet(seed);
     const gadget = worksheet.definitions.find((row) => row.prefabId === 'ItemFixtureGadget');
